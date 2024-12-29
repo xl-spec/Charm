@@ -2,9 +2,9 @@ class MouseHandler {
     constructor(camera) {
       this.dragStart = null;
       this.angleX = 0; // Horizontal rotation angle
-      this.angleY = 0; // Vertical rotation angle
-      this.zoomLevel = 1024; // Initial zoom level
-      this.camera = camera; // Reference to the p5.js camera
+      this.angleY = -60; // Vertical rotation angle
+      this.zoomLevel = 100; // Initial zoom level
+      // this.camera = camera; // Reference to the p5.js camera
     }
   
     mousePressed() {
@@ -29,17 +29,14 @@ class MouseHandler {
     }
   
     mouseReleased() {
-      // Stop dragging when the mouse is released
+      // Stop dragging when the mouse is rewleased
       this.dragStart = null;
     }
   
     mouseWheel(event) {
-      // Adjust zoom level based on the wheel movement
-      this.zoomLevel += event.delta * 2; // Scale zoom increment
-      this.zoomLevel = constrain(this.zoomLevel, 200, 1500); // Constrain zoom level
-      this.camera.setPosition(0, 0, this.zoomLevel);
+      this.zoomLevel += event.delta * 2; 
     }
-  
+
     applyRotation() {
       // Apply rotation to the scene
       rotateX(this.angleY);

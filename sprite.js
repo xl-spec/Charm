@@ -1,23 +1,27 @@
-class Sprite {
+class Entity {
     constructor(x, y, z, size, color) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
       this.size = size;
       this.color = color || [100, 200, 255, 150]; // Default color
   
       // Create a p5.play sprite for collision detection
-      this.sprite = createSprite(x, z, size, size); // Map 3D x, z to 2D x, y
-      this.sprite.visible = false; // Hide the 2D sprite (we'll render 3D manually)
+      this.sprite = new Sprite(x, z, size, size); // Map 3D x, z to 2D x, y
+      // this.sprite.visible = false; // Hide the 2D sprite (we'll render 3D manually)
+      this.sprite.static = true;
+
     }
   
     move(dx, dy, dz) {
       this.sprite.position.x += dx;
       this.sprite.position.y += dz; // Z-axis in 3D maps to Y in p5.play
+      this.x = this.sprite.position.x;
+      this.z = this.sprite.position.y;
+      // this.z = z;
     }
   
     draw() {
-      // Sync the p5.play sprite position with the 3D object
-      this.sprite.position.x = this.sprite.position.x; // Keep x in sync
-      this.sprite.position.z = this.sprite.position.z; // Keep z (mapped to y) in sync
-  
       // Draw the 3D representation of the sprite
       push();
       translate(this.sprite.position.x, 0, this.sprite.position.y);
@@ -28,18 +32,26 @@ class Sprite {
     }
   
     checkCollision(otherSprite) {
-      if (this.sprite.overlap(otherSprite.sprite)) {
-        console.log('Collision detected!');
-        this.color = [255, 0, 0, 150]; // Change color to red
-      } else {
-        this.color = [100, 200, 255, 150]; // Revert to default color
+      // console.log(this.sprite.position.x);
+      // console.log(this.sprite.position.y);
+
+      // console.log(otherSprite.sprite.position.x);
+      // console.log(otherSprite.sprite.position.y);
+
+      // console.log("");
+      // console.log(this.sprite.collides(otherSprite.sprite));
+      if (this.sprite.collides(otherSprite.sprite)) {
+        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
       }
     }
+    
+    
   }
   
-class ControllableSprite extends Sprite {
+class ControllableSprite extends Entity {
   constructor(x, y, z, size, color) {
     super(x, y, z, size, color); // Call the base class constructor
+    this.name = "Clairo";
   }
 
   moveWithDirection(direction, speed) {
@@ -58,31 +70,12 @@ class ControllableSprite extends Sprite {
     // Apply movement
     this.move(dx * moveSpeed, 0, dz * moveSpeed);
   }
-
-  checkCollisionWithSprites(sprites) {
-    let collisionDetected = false;
-
-    for (let sprite of sprites) {
-      if (sprite !== this && this.sprite.overlap(sprite.sprite)) {
-        collisionDetected = true;
-        console.log(`Collision detected with ${sprite.constructor.name}`);
-        break; // Stop checking further once a collision is detected
-      }
-    }
-
-    // Change color based on collision state
-    if (collisionDetected) {
-      this.color = [255, 0, 0, 150]; // Change to red
-    } else {
-      this.color = [100, 200, 255, 150]; // Default color
-    }
-  }
 }
-
   
-class DeadTree extends Sprite {
+class DeadTree extends Entity {
   constructor(x, y, z) {
     super(x, y, z, 40, [139, 69, 19, 255]); // Brownish color for dead tree
+    this.name = "Dead Tree";
   }
 
   draw() {

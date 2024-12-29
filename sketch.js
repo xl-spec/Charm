@@ -1,82 +1,119 @@
 let level; // Level object
-let cam; // Camera object
-let uiLayer; // Graphics object for the UI
+let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
-let sprites = []; // Array of sprites
+let entities = []; // Array of sprites
 let innerBox; // Controllable sprite
 
 function setup() {
-  createCanvas(1200, 800, WEBGL);
+  // Create the WebGL canvas (primary canvas)
+  createCanvas(windowWidth, windowHeight, WEBGL);
 
-  // Create a camera
-  cam = createCamera();
-  cam.setPosition(0, 0, 1024); // Initial camera position
-  cam.lookAt(0, 0, 0);
+  // Create the GUI canvas for 2D overlay
+  guiCanvas = createGraphics(windowWidth, windowHeight);
 
-  // Create the MouseHandler instance
-  mouseHandler = new MouseHandler(cam);
-
-  // Create the KeyHandler instance
+  // Initialize handlers
+  mouseHandler = new MouseHandler();
   keyHandler = new KeyHandler();
 
-  // Create the level as a Level instance
+  // Initialize level
   level = new Level(1024, 128, 1024);
 
-  // Create the inner box as a ControllableSprite instance
-  innerBox = new ControllableSprite(0, 32, 0, 64);
-  sprites.push(innerBox);
+  // Initialize controllable sprite (clairo)
+  innerBox = new ControllableSprite(0, 32, 0, 32);
 
-  // Add some dead trees
+  // Initialize entities
   for (let i = 0; i < 5; i++) {
-    let tree = new DeadTree(random(-400, 400), 32, random(-400, 400));
-    sprites.push(tree);
+    entities.push(new DeadTree(random(-400, 400), 32, random(-400, 400), 0));
   }
 
-  // Create a separate graphics layer for the UI
-  uiLayer = createGraphics(width, height);
+  entities[0].x = innerBox.x;
+  entities[0].z = innerBox.z;
+  entities[1].x = innerBox.x;
+  entities[1].z = innerBox.z;
+  entities[2].x = innerBox.x;
+  entities[2].z = innerBox.z;
+  
 }
 
 function draw() {
+  clear();
   background(50);
 
-  // Update the camera's position and zoom level
-  cam.setPosition(300, -300, mouseHandler.zoomLevel);
-  cam.lookAt(100, 0, 0);
-
-  // Add lights for better visualization
+  // Add lights
   ambientLight(100);
   pointLight(255, 255, 255, 0, 0, 300);
 
-  // Apply rotation from the MouseHandler
+  // Render 3D content
+  push();
+  translate(0, 0, mouseHandler.zoomLevel);
   mouseHandler.applyRotation();
 
-  // Handle movement for the controllable sprite
-  handleMovement();
-
-  // Draw the level (container box)
   level.draw();
+  innerBox.draw();
+  
 
-  // Check for collisions for innerBox
-  innerBox.checkCollisionWithSprites(sprites);
-
-  // Draw all sprites
-  for (let sprite of sprites) {
-    sprite.draw();
+  for (let entity of entities) {
+    entity.draw();
+      // console.log("not clairo");
+      // sprite.checkCollision(innerBox);
+    if (entity.sprite.overlap(innerBox.sprite)) {
+      console.log(`Collision detected between ${entity.name} and ${innerBox.name}`);
+    }
+    
+    // else{
+    //     console.log("is clairo");
+    //   }
   }
 
-  // Render the 2D UI on top of the 3D scene
+  pop();
+  handleMovement();
+
+  // Update GUI layer
   drawUI();
 
-  // Display the UI layer
-  image(uiLayer, -width / 2, -height / 2);
+  // Overlay GUI on top
+  image(guiCanvas, -width/2, -height/2); // Position GUI layer
 }
 
+function drawUI() {
+  guiCanvas.clear();
+  guiCanvas.fill(100, 170, 200);
+  guiCanvas.textSize(16);
+
+  // Display FPS
+  guiCanvas.text(`FPS: ${Math.floor(frameRate())}`, 10, 20);
+
+  // Display positions of entities
+  let yOffset = 40; // Start position for entity info
+  const p5playX = innerBox.sprite.position.x;
+  const p5playY = innerBox.sprite.position.y;
+  const originalX = innerBox.x;
+  const originalZ = innerBox.z;
+  guiCanvas.text(
+    `${innerBox.name}: p5playX: ${Math.floor(p5playX)}, p5playY: ${Math.floor(p5playY)}, Original X: ${Math.floor(originalX)}, Original Z: ${Math.floor(originalZ)}`,
+    10,
+    yOffset
+  );
+  yOffset += 20; 
+  for (let entity of entities) {
+    const p5playX = entity.sprite.position.x;
+    const p5playY = entity.sprite.position.y;
+    const originalX = entity.x;
+    const originalZ = entity.z;
+    guiCanvas.text(
+      `${entity.name}: p5playX: ${Math.floor(p5playX)}, p5playY: ${Math.floor(p5playY)}, Original X: ${Math.floor(originalX)}, Original Z: ${Math.floor(originalZ)}`,
+      10,
+      yOffset
+    );
+    yOffset += 20; // Move down for the next entity
+  }
+}
 
 
 function handleMovement() {
   const movement = keyHandler.getMovement();
-  const speed = 15; // Base movement speed
+  const speed = 15;
   innerBox.moveWithDirection(movement, speed);
 }
 
@@ -102,18 +139,4 @@ function mouseReleased() {
 
 function mouseWheel(event) {
   mouseHandler.mouseWheel(event);
-}
-
-function drawUI() {
-  // Clear the UI layer
-  uiLayer.clear();
-
-  // Set styles for the UI
-  uiLayer.fill(255);
-  uiLayer.noStroke();
-  uiLayer.textSize(16);
-
-  // Display FPS in the top-left corner
-  let fps = Math.round(frameRate());
-  uiLayer.text(`FPS: ${fps}`, 10, 20);
 }

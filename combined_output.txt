@@ -1,0 +1,324 @@
+class KeyHandler {
+    constructor() {
+      this.movement = { left: false, right: false, up: false, down: false };
+    }
+  
+    handleKeyPressed(key) {
+      if (key === 'a') this.movement.left = true;
+      if (key === 'd') this.movement.right = true;
+      if (key === 'w') this.movement.up = true;
+      if (key === 's') this.movement.down = true;
+    }
+  
+    handleKeyReleased(key) {
+      if (key === 'a') this.movement.left = false;
+      if (key === 'd') this.movement.right = false;
+      if (key === 'w') this.movement.up = false;
+      if (key === 's') this.movement.down = false;
+    }
+  
+    getMovement() {
+      return this.movement;
+    }
+  }
+  
+
+class Level {
+    constructor(width, height, depth) {
+      this.size = { width, height, depth };
+    }
+  
+    draw() {
+      push();
+      translate(0, 0, 0); // Center the level at the origin
+      noFill();
+      stroke(255); // Outline color
+      box(this.size.width, this.size.height, this.size.depth); // Render the container box
+      pop();
+    }
+  }
+  
+
+class MouseHandler {
+    constructor(camera) {
+      this.dragStart = null;
+      this.angleX = 0; // Horizontal rotation angle
+      this.angleY = -60; // Vertical rotation angle
+      this.zoomLevel = 100; // Initial zoom level
+      // this.camera = camera; // Reference to the p5.js camera
+    }
+  
+    mousePressed() {
+      // Track the initial mouse position on press
+      this.dragStart = { x: mouseX, y: mouseY };
+    }
+  
+    mouseDragged() {
+      if (this.dragStart) {
+        // Calculate the difference between the current and initial mouse positions
+        let deltaX = mouseX - this.dragStart.x;
+        let deltaY = mouseY - this.dragStart.y;
+  
+        // Adjust angles based on mouse movement
+        this.angleX += deltaX * 0.1; // Horizontal rotation
+        this.angleY -= deltaY * 0.1; // Vertical rotation
+
+  
+        // Update dragStart to the current position for smooth dragging
+        this.dragStart = { x: mouseX, y: mouseY };
+      }
+    }
+  
+    mouseReleased() {
+      // Stop dragging when the mouse is rewleased
+      this.dragStart = null;
+    }
+  
+    mouseWheel(event) {
+      this.zoomLevel += event.delta * 2; 
+    }
+
+    applyRotation() {
+      // Apply rotation to the scene
+      rotateX(this.angleY);
+      rotateY(this.angleX);
+    }
+  }
+  
+
+let level; // Level object
+let guiCanvas; // GUI canvas for 2D overlay
+let mouseHandler; // MouseHandler object
+let keyHandler; // KeyHandler object
+let entities = []; // Array of sprites
+let innerBox; // Controllable sprite
+
+function setup() {
+  // Create the WebGL canvas (primary canvas)
+  createCanvas(windowWidth, windowHeight, WEBGL);
+
+  // Create the GUI canvas for 2D overlay
+  guiCanvas = createGraphics(windowWidth, windowHeight);
+
+  // Initialize handlers
+  mouseHandler = new MouseHandler();
+  keyHandler = new KeyHandler();
+
+  // Initialize level
+  level = new Level(1024, 128, 1024);
+
+  // Initialize controllable sprite
+  innerBox = new ControllableSprite(0, 32, 0, 32);
+  entities.push(innerBox);
+
+  // Add static objects
+  for (let i = 0; i < 5; i++) {
+    let tree = new DeadTree(random(-400, 400), 32, random(-400, 400), 0);
+    entities.push(tree);
+  }
+}
+
+function draw() {
+  clear();
+  background(50);
+
+  // Add lights
+  ambientLight(100);
+  pointLight(255, 255, 255, 0, 0, 300);
+
+  // Render 3D content
+  push();
+  translate(0, 0, mouseHandler.zoomLevel);
+  mouseHandler.applyRotation();
+  level.draw();
+  for (let entity of entities) {
+    
+    entity.draw();
+  
+    if (entity.name !== "Clairo") {
+      // console.log("not clairo");
+      // sprite.checkCollision(innerBox);
+      if (entity.sprite.overlaps(innerBox.sprite)) {
+        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
+      }
+    }
+    // else{
+    //     console.log("is clairo");
+    //   }
+  }
+
+  pop();
+  handleMovement();
+
+  // Update GUI layer
+  drawUI();
+
+  // Overlay GUI on top
+  image(guiCanvas, -width/2, -height/2); // Position GUI layer
+}
+
+function drawUI() {
+  guiCanvas.clear();
+  guiCanvas.fill(100, 170, 200);
+  guiCanvas.textSize(16);
+
+  // Display FPS
+  guiCanvas.text(`FPS: ${Math.floor(frameRate())}`, 10, 20);
+
+  // Display positions of entities
+  let yOffset = 40; // Start position for entity info
+  for (let entity of entities) {
+    const p5playX = entity.sprite.position.x;
+    const p5playY = entity.sprite.position.y;
+    const originalX = entity.x;
+    const originalZ = entity.z;
+    guiCanvas.text(
+      `${entity.name}: p5playX: ${Math.floor(p5playX)}, p5playY: ${Math.floor(p5playY)}, Original X: ${Math.floor(originalX)}, Original Z: ${Math.floor(originalZ)}`,
+      10,
+      yOffset
+    );
+    yOffset += 20; // Move down for the next entity
+  }
+}
+
+
+function handleMovement() {
+  const movement = keyHandler.getMovement();
+  const speed = 15;
+  innerBox.moveWithDirection(movement, speed);
+}
+
+function keyPressed() {
+  keyHandler.handleKeyPressed(key);
+}
+
+function keyReleased() {
+  keyHandler.handleKeyReleased(key);
+}
+
+function mousePressed() {
+  mouseHandler.mousePressed();
+}
+
+function mouseDragged() {
+  mouseHandler.mouseDragged();
+}
+
+function mouseReleased() {
+  mouseHandler.mouseReleased();
+}
+
+function mouseWheel(event) {
+  mouseHandler.mouseWheel(event);
+}
+
+
+class Entity {
+    constructor(x, y, z, size, color) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.size = size;
+      this.color = color || [100, 200, 255, 150]; // Default color
+  
+      // Create a p5.play sprite for collision detection
+      this.sprite = new Sprite(x, z, size, size); // Map 3D x, z to 2D x, y
+      // this.sprite.visible = false; // Hide the 2D sprite (we'll render 3D manually)
+      this.sprite.static = true;
+
+    }
+  
+    move(dx, dy, dz) {
+      this.sprite.position.x += dx;
+      this.sprite.position.y += dz; // Z-axis in 3D maps to Y in p5.play
+      this.x += dx;
+      this.z += dz;
+      // this.z = z;
+    }
+  
+    draw() {
+      this.sprite.position.x = this.x; // Keep x in sync
+      this.sprite.position.y = this.z; // Keep z (mapped to y) in sync
+      // this.x = this.x;
+      // this.y = this.y;
+      // this.z = this.z;
+  
+      // Draw the 3D representation of the sprite
+      push();
+      translate(this.sprite.position.x, 0, this.sprite.position.y);
+      fill(...this.color);
+      stroke(255);
+      box(this.size);
+      pop();
+    }
+  
+    checkCollision(otherSprite) {
+      // console.log(this.sprite.position.x);
+      // console.log(this.sprite.position.y);
+
+      // console.log(otherSprite.sprite.position.x);
+      // console.log(otherSprite.sprite.position.y);
+
+      // console.log("");
+      // console.log(this.sprite.collides(otherSprite.sprite));
+      if (this.sprite.collides(otherSprite.sprite)) {
+        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
+      }
+    }
+    
+    
+  }
+  
+class ControllableSprite extends Entity {
+  constructor(x, y, z, size, color) {
+    super(x, y, z, size, color); // Call the base class constructor
+    this.name = "Clairo";
+  }
+
+  moveWithDirection(direction, speed) {
+    let dx = 0, dz = 0;
+
+    // Adjust movement based on direction
+    if (direction.left) dx -= 1;
+    if (direction.right) dx += 1;
+    if (direction.up) dz -= 1;
+    if (direction.down) dz += 1;
+
+    // Check for diagonal movement and scale speed
+    const isDiagonal = dx !== 0 && dz !== 0;
+    const moveSpeed = isDiagonal ? speed / Math.sqrt(2) : speed;
+
+    // Apply movement
+    this.move(dx * moveSpeed, 0, dz * moveSpeed);
+  }
+}
+  
+class DeadTree extends Entity {
+  constructor(x, y, z) {
+    super(x, y, z, 40, [139, 69, 19, 255]); // Brownish color for dead tree
+    this.name = "Dead Tree";
+  }
+
+  draw() {
+    push();
+    // newz = this.sprite.position.y
+    translate(this.sprite.position.x, 0, this.sprite.position.y);
+
+    // Draw trunk
+    fill(139, 69, 19); // Brown
+    box(this.size / 4, this.size, this.size / 4);
+
+    // Draw branches
+    fill(160, 82, 45); // Lighter brown
+    translate(0, -this.size / 2, 0);
+    rotateZ(PI / 4);
+    box(this.size / 8, this.size / 2, this.size / 8);
+    rotateZ(-PI / 2);
+    box(this.size / 8, this.size / 2, this.size / 8);
+
+    pop();
+  }
+}
+
+
+
