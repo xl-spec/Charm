@@ -19,8 +19,8 @@ class MouseHandler {
         let deltaY = mouseY - this.dragStart.y;
   
         // Adjust angles based on mouse movement
-        this.angleX += deltaX * 0.1; // Horizontal rotation
-        this.angleY -= deltaY * 0.1; // Vertical rotation
+        this.angleX -= deltaX * 0.01; // Horizontal rotation
+        this.angleY -= deltaY * 0.01; // Vertical rotation
 
   
         // Update dragStart to the current position for smooth dragging

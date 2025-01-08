@@ -92,6 +92,7 @@ let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
 let innerBox; // Controllable sprite
+let yOffset;
 
 function setup() {
   // Create the WebGL canvas (primary canvas)
@@ -107,15 +108,15 @@ function setup() {
   // Initialize level
   level = new Level(1024, 128, 1024);
 
-  // Initialize controllable sprite
+  // Initialize controllable sprite (clairo)
   innerBox = new ControllableSprite(0, 32, 0, 32);
-  entities.push(innerBox);
 
-  // Add static objects
+  // Initialize entities
   for (let i = 0; i < 5; i++) {
-    let tree = new DeadTree(random(-400, 400), 32, random(-400, 400), 0);
-    entities.push(tree);
+    entities.push(new DeadTree(random(-400, 400), 32, random(-400, 400), 0));
   }
+
+  
 }
 
 function draw() {
@@ -130,26 +131,19 @@ function draw() {
   push();
   translate(0, 0, mouseHandler.zoomLevel);
   mouseHandler.applyRotation();
+
   level.draw();
-  for (let entity of entities) {
-    
-    entity.draw();
+  innerBox.draw();
   
-    if (entity.name !== "Clairo") {
+  for (let entity of entities) {
+    entity.draw();
       // console.log("not clairo");
       // sprite.checkCollision(innerBox);
-      if (entity.sprite.overlaps(innerBox.sprite)) {
-        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
-      }
-    }
-    // else{
-    //     console.log("is clairo");
-    //   }
   }
 
   pop();
   handleMovement();
-
+ 
   // Update GUI layer
   drawUI();
 
@@ -166,14 +160,14 @@ function drawUI() {
   guiCanvas.text(`FPS: ${Math.floor(frameRate())}`, 10, 20);
 
   // Display positions of entities
-  let yOffset = 40; // Start position for entity info
+
+  yOffset += 20; 
   for (let entity of entities) {
-    const p5playX = entity.sprite.position.x;
-    const p5playY = entity.sprite.position.y;
-    const originalX = entity.x;
-    const originalZ = entity.z;
+    const p5playX = entity.x;
+    const p5playY = entity.y;
+    // const originalX = entity.x;
     guiCanvas.text(
-      `${entity.name}: p5playX: ${Math.floor(p5playX)}, p5playY: ${Math.floor(p5playY)}, Original X: ${Math.floor(originalX)}, Original Z: ${Math.floor(originalZ)}`,
+      `${entity.name}: entity.x: ${Math.floor(entity.x)}, entity.y: ${Math.floor(entity.y)}}`,
       10,
       yOffset
     );
@@ -213,6 +207,8 @@ function mouseWheel(event) {
 }
 
 
+
+
 class Entity {
     constructor(x, y, z, size, color) {
       this.x = x;
@@ -220,51 +216,31 @@ class Entity {
       this.z = z;
       this.size = size;
       this.color = color || [100, 200, 255, 150]; // Default color
-  
-      // Create a p5.play sprite for collision detection
-      this.sprite = new Sprite(x, z, size, size); // Map 3D x, z to 2D x, y
-      // this.sprite.visible = false; // Hide the 2D sprite (we'll render 3D manually)
-      this.sprite.static = true;
 
     }
   
     move(dx, dy, dz) {
-      this.sprite.position.x += dx;
-      this.sprite.position.y += dz; // Z-axis in 3D maps to Y in p5.play
       this.x += dx;
-      this.z += dz;
+      this.y += dz; // Z-axis in 3D maps to Y in p5.play
       // this.z = z;
     }
   
     draw() {
-      this.sprite.position.x = this.x; // Keep x in sync
-      this.sprite.position.y = this.z; // Keep z (mapped to y) in sync
-      // this.x = this.x;
-      // this.y = this.y;
-      // this.z = this.z;
-  
       // Draw the 3D representation of the sprite
       push();
-      translate(this.sprite.position.x, 0, this.sprite.position.y);
+      translate(this.x, 0, this.y);
       fill(...this.color);
       stroke(255);
       box(this.size);
       pop();
     }
   
-    checkCollision(otherSprite) {
-      // console.log(this.sprite.position.x);
-      // console.log(this.sprite.position.y);
-
-      // console.log(otherSprite.sprite.position.x);
-      // console.log(otherSprite.sprite.position.y);
-
-      // console.log("");
-      // console.log(this.sprite.collides(otherSprite.sprite));
-      if (this.sprite.collides(otherSprite.sprite)) {
-        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
-      }
-    }
+    // checkCollision(otherSprite) {
+    //   let distanc = this.dist()
+    //   if (this.sprite.collides(otherSprite.sprite)) {
+    //     console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
+    //   }
+    // }
     
     
   }
@@ -302,7 +278,7 @@ class DeadTree extends Entity {
   draw() {
     push();
     // newz = this.sprite.position.y
-    translate(this.sprite.position.x, 0, this.sprite.position.y);
+    translate(this.x, 0, this.y);
 
     // Draw trunk
     fill(139, 69, 19); // Brown
