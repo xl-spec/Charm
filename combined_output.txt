@@ -43,9 +43,9 @@ class MouseHandler {
     constructor(camera) {
       this.dragStart = null;
       this.angleX = 0; // Horizontal rotation angle
-      this.angleY = -60; // Vertical rotation angle
-      this.zoomLevel = 100; // Initial zoom level
-      // this.camera = camera; // Reference to the p5.js camera
+      this.angleY = -60.4; // Vertical rotation angle
+      this.zoomLevel = 20; // Initial zoom level
+      // this.camera = camera; maybe add later idk
     }
   
     mousePressed() {
@@ -60,8 +60,8 @@ class MouseHandler {
         let deltaY = mouseY - this.dragStart.y;
   
         // Adjust angles based on mouse movement
-        this.angleX += deltaX * 0.1; // Horizontal rotation
-        this.angleY -= deltaY * 0.1; // Vertical rotation
+        this.angleX -= deltaX * 0.01; // Horizontal rotation
+        this.angleY -= deltaY * 0.01; // Vertical rotation
 
   
         // Update dragStart to the current position for smooth dragging
@@ -92,7 +92,7 @@ let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
 let innerBox; // Controllable sprite
-let yOffset;
+
 
 function setup() {
   // Create the WebGL canvas (primary canvas)
@@ -112,20 +112,20 @@ function setup() {
   innerBox = new ControllableSprite(0, 32, 0, 32);
 
   // Initialize entities
-  for (let i = 0; i < 5; i++) {
-    entities.push(new DeadTree(random(-400, 400), 32, random(-400, 400), 0));
+  for (let i = 0; i < 10; i++) {
+    // entities.push(new DeadTree(random(-400, 400), 32, random(-400, 400), 0, 0, 40, [139, 69, 19, 255], "Dead Tree"));
+    entities.push(new DeadTree(random(-400, 400), 32, random(-400, 400), 0, 40, [139, 69, 19, 255], "Dead Tree"));
   }
 
-  
 }
 
 function draw() {
   clear();
   background(50);
 
-  // Add lights
   ambientLight(100);
   pointLight(255, 255, 255, 0, 0, 300);
+  // Add lights
 
   // Render 3D content
   push();
@@ -138,7 +138,7 @@ function draw() {
   for (let entity of entities) {
     entity.draw();
       // console.log("not clairo");
-      // sprite.checkCollision(innerBox);
+      entity.checkCollision(innerBox);
   }
 
   pop();
@@ -152,6 +152,7 @@ function draw() {
 }
 
 function drawUI() {
+  let yOffset = 40;
   guiCanvas.clear();
   guiCanvas.fill(100, 170, 200);
   guiCanvas.textSize(16);
@@ -160,18 +161,19 @@ function drawUI() {
   guiCanvas.text(`FPS: ${Math.floor(frameRate())}`, 10, 20);
 
   // Display positions of entities
-
-  yOffset += 20; 
+  guiCanvas.text(
+    `${innerBox.name}: x: ${Math.floor(innerBox.x)}, z: ${Math.floor(innerBox.z)}}`,
+    10,
+    yOffset
+  );
+  yOffset += 20; // Move down for the next entity
   for (let entity of entities) {
-    const p5playX = entity.x;
-    const p5playY = entity.y;
-    // const originalX = entity.x;
     guiCanvas.text(
-      `${entity.name}: entity.x: ${Math.floor(entity.x)}, entity.y: ${Math.floor(entity.y)}}`,
+      `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}}`,
       10,
       yOffset
     );
-    yOffset += 20; // Move down for the next entity
+    yOffset += 20;
   }
 }
 
@@ -210,44 +212,45 @@ function mouseWheel(event) {
 
 
 class Entity {
-    constructor(x, y, z, size, color) {
+    constructor(x, y, z, size, color, name) {
       this.x = x;
       this.y = y;
       this.z = z;
       this.size = size;
       this.color = color || [100, 200, 255, 150]; // Default color
-
+      this.name = name || "Entity";
+      this.circle_hitbox = circle(this.x, this.z, this.size);
     }
   
     move(dx, dy, dz) {
       this.x += dx;
-      this.y += dz; // Z-axis in 3D maps to Y in p5.play
-      // this.z = z;
+      this.z -= dz;
     }
   
     draw() {
       // Draw the 3D representation of the sprite
       push();
-      translate(this.x, 0, this.y);
+      translate(this.x, 0, this.z);
       fill(...this.color);
       stroke(255);
       box(this.size);
       pop();
     }
   
-    // checkCollision(otherSprite) {
-    //   let distanc = this.dist()
-    //   if (this.sprite.collides(otherSprite.sprite)) {
-    //     console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
-    //   }
-    // }
-    
+    checkCollision(otherSprite) {
+      let distance_between = dist(this.x, this.z, otherSprite.x, otherSprite.z);
+      // if (this.sprite.collides(otherSprite.sprite)) {
+      if (distance_between < this.size / 2 + otherSprite.size / 2) {
+        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
+      }
+    }
+  
     
   }
   
 class ControllableSprite extends Entity {
-  constructor(x, y, z, size, color) {
-    super(x, y, z, size, color); // Call the base class constructor
+  constructor(x, y, z, size, color, name) {
+    super(x, y, z, size, color, name); // Call the base class constructor
     this.name = "Clairo";
   }
 
@@ -262,6 +265,9 @@ class ControllableSprite extends Entity {
 
     // Check for diagonal movement and scale speed
     const isDiagonal = dx !== 0 && dz !== 0;
+    /////////////////////////////////////////////////////////
+    // might need to change this to flat number for faster speed
+
     const moveSpeed = isDiagonal ? speed / Math.sqrt(2) : speed;
 
     // Apply movement
@@ -270,15 +276,14 @@ class ControllableSprite extends Entity {
 }
   
 class DeadTree extends Entity {
-  constructor(x, y, z) {
-    super(x, y, z, 40, [139, 69, 19, 255]); // Brownish color for dead tree
-    this.name = "Dead Tree";
+  constructor(x, y, z, size, color, name) {
+    super(x, y, z, 40, [139, 69, 19, 255], "Dead Tree"); // Brownish color for dead tree
+    // super(x, y, z, size, color, name); // Brownish color for dead tree
   }
 
   draw() {
     push();
-    // newz = this.sprite.position.y
-    translate(this.x, 0, this.y);
+    translate(this.x, 0, this.z);
 
     // Draw trunk
     fill(139, 69, 19); // Brown

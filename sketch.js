@@ -7,43 +7,43 @@ let innerBox; // Controllable sprite
 
 
 function setup() {
-  // Create the WebGL canvas (primary canvas)
   createCanvas(windowWidth, windowHeight, WEBGL);
 
-  // Create the GUI canvas for 2D overlay
+  // gui
   guiCanvas = createGraphics(windowWidth, windowHeight);
 
-  // Initialize handlers
+  // input handlers
   mouseHandler = new MouseHandler();
   keyHandler = new KeyHandler();
 
   // Initialize level
   level = new Level(1024, 128, 1024);
 
-  // Initialize controllable sprite (clairo)
+  // x, y, z, size, color, name (constructor)
   innerBox = new ControllableSprite(0, 32, 0, 32);
 
-  // Initialize entities
-  for (let i = 0; i < 10; i++) {
-    // entities.push(new DeadTree(random(-400, 400), 32, random(-400, 400), 0, 0, 40, [139, 69, 19, 255], "Dead Tree"));
-    entities.push(new DeadTree(random(-400, 400), 32, random(-400, 400), 0, 40, [139, 69, 19, 255], "Dead Tree"));
+  for (let i = 0; i < 20; i++) {
+    entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
   }
 
-  
+  for (let i = 0; i < 10; i++) {
+    entities.push(new Snowman(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Snowman"));
+  }
 }
 
 function draw() {
   clear();
   background(50);
 
-  // Add lights
   ambientLight(100);
   pointLight(255, 255, 255, 0, 0, 300);
+  // Add lights
 
   // Render 3D content
   push();
   translate(0, 0, mouseHandler.zoomLevel);
   mouseHandler.applyRotation();
+  // orbitControl(3, 3, 3);
 
   level.draw();
   innerBox.draw();
@@ -93,7 +93,7 @@ function drawUI() {
 
 function handleMovement() {
   const movement = keyHandler.getMovement();
-  const speed = 15;
+  const speed = 10;
   innerBox.moveWithDirection(movement, speed);
 }
 

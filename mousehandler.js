@@ -2,9 +2,9 @@ class MouseHandler {
     constructor(camera) {
       this.dragStart = null;
       this.angleX = 0; // Horizontal rotation angle
-      this.angleY = -60; // Vertical rotation angle
-      this.zoomLevel = 100; // Initial zoom level
-      // this.camera = camera; // Reference to the p5.js camera
+      this.angleY = -60.4; // Vertical rotation angle
+      this.zoomLevel = 20; // Initial zoom level
+      // this.camera = camera; maybe add later idk
     }
   
     mousePressed() {

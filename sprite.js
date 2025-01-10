@@ -6,6 +6,7 @@ class Entity {
       this.size = size;
       this.color = color || [100, 200, 255, 150]; // Default color
       this.name = name || "Entity";
+      this.hitbox_visible = true;
     }
   
     move(dx, dy, dz) {
@@ -14,18 +15,22 @@ class Entity {
     }
   
     draw() {
-      // Draw the 3D representation of the sprite
-      push();
-      translate(this.x, 0, this.z);
-      fill(...this.color);
-      stroke(255);
-      box(this.size);
-      pop();
+      // this is a circle that represents the hitbox of the entity
+      if (this.hitbox_visible){
+        push();
+          translate(this.x, -65, this.z);
+          rotateX(-HALF_PI);
+          noStroke();
+          fill(255, 0, 0, 100);
+          ellipse(0, 0, this.size, this.size);
+        pop();
+
+      }
+
     }
   
-    checkCollision(otherSprite) {
+    checkCollision(otherSprite) { // formula for circle collsion
       let distance_between = dist(this.x, this.z, otherSprite.x, otherSprite.z);
-      // if (this.sprite.collides(otherSprite.sprite)) {
       if (distance_between < this.size / 2 + otherSprite.size / 2) {
         console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
       }
@@ -51,40 +56,63 @@ class ControllableSprite extends Entity {
 
     // Check for diagonal movement and scale speed
     const isDiagonal = dx !== 0 && dz !== 0;
-    /////////////////////////////////////////////////////////
-    // might need to change this to flat number for faster speed
+    const moveSpeed = isDiagonal ? speed / 1.414 : speed; // good enough
 
-    const moveSpeed = isDiagonal ? speed / Math.sqrt(2) : speed;
-
-    // Apply movement
     this.move(dx * moveSpeed, 0, dz * moveSpeed);
+  }
+
+  draw(){
+    super.draw();
+      push();
+        translate(this.x, 0, this.z);
+        fill(...this.color);
+        stroke(255);
+        cone(this.size / 2, this.size);
+      pop();
   }
 }
   
-class DeadTree extends Entity {
+class Tree extends Entity { // maybe rename to Tree later
   constructor(x, y, z, size, color, name) {
-    super(x, y, z, 40, [139, 69, 19, 255], "Dead Tree"); // Brownish color for dead tree
-    // super(x, y, z, size, color, name); // Brownish color for dead tree
-    this.name = "Dead Tree";
+    super(x, y, z, size, color, name);
   }
 
   draw() {
+    super.draw();
     push();
-    translate(this.x, 0, this.z);
+      translate(this.x, 0, this.z);
 
-    // Draw trunk
-    fill(139, 69, 19); // Brown
-    box(this.size / 4, this.size, this.size / 4);
+      // Draw trunk
+      fill(139, 69, 19); // Brown
+      box(this.size / 4, this.size, this.size / 4);
 
-    // Draw branches
-    fill(160, 82, 45); // Lighter brown
-    translate(0, -this.size / 2, 0);
-    rotateZ(PI / 4);
-    box(this.size / 8, this.size / 2, this.size / 8);
-    rotateZ(-PI / 2);
-    box(this.size / 8, this.size / 2, this.size / 8);
+      // Draw branches
+      fill(160, 82, 45); // Lighter brown
+      translate(0, -this.size / 2, 0);
+      rotateZ(PI / 4);
+      box(this.size / 8, this.size / 2, this.size / 8);
+      rotateZ(-PI / 2);
+      box(this.size / 8, this.size / 2, this.size / 8);
 
     pop();
   }
 }
 
+class Snowman extends Entity{
+  // two attacks, one requires snow ammo and throws snowball at character, other is just a mini weak lunge
+  constructor(x, y, z, size, color, name){
+    super(x, y, z, size, color, name);
+  }
+
+  draw(){
+    super.draw();
+    push();
+      translate(this.x, 0, this.z);
+      fill(255);
+      // Draw snowman body
+      sphere(this.size / 2);
+      sphere(this.size / 3);
+      sphere(this.size / 4);
+    pop();
+  }
+}
