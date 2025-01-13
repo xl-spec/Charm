@@ -50,13 +50,13 @@ function draw() {
   
   for (let entity of entities) {
     entity.draw();
-      // console.log("not clairo");
-      entity.checkCollision(innerBox);
+    entity.checkCollision(innerBox);
   }
 
   pop();
   handleMovement();
- 
+  handleAction();
+
   // Update GUI layer
   drawUI();
 
@@ -95,6 +95,12 @@ function handleMovement() {
   const movement = keyHandler.getMovement();
   const speed = 10;
   innerBox.moveWithDirection(movement, speed);
+}
+
+function handleAction(){
+  if (keyHandler.getAction()){
+    innerBox.axe.startAttack();
+  }
 }
 
 function keyPressed() {

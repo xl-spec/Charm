@@ -7,6 +7,8 @@ class Entity {
       this.color = color || [100, 200, 255, 150]; // Default color
       this.name = name || "Entity";
       this.hitbox_visible = true;
+
+      this.axe = new Axe("Wood Axe", this);
     }
   
     move(dx, dy, dz) {
@@ -14,7 +16,7 @@ class Entity {
       this.z -= dz;
     }
   
-    draw() {
+    draw() { // maybe rename idk
       // this is a circle that represents the hitbox of the entity
       if (this.hitbox_visible){
         push();
@@ -43,9 +45,12 @@ class ControllableSprite extends Entity {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name); // Call the base class constructor
     this.name = "Clairo";
+    this.hit_action = false;
   }
 
   moveWithDirection(direction, speed) {
+    //////////////////////////
+    // lock movement if in action,
     let dx = 0, dz = 0;
 
     // Adjust movement based on direction
@@ -63,12 +68,15 @@ class ControllableSprite extends Entity {
 
   draw(){
     super.draw();
-      push();
-        translate(this.x, 0, this.z);
-        fill(...this.color);
-        stroke(255);
-        cone(this.size / 2, this.size);
-      pop();
+
+    push();
+      translate(this.x, 0, this.z);
+      fill(...this.color);
+      stroke(255);
+      cone(this.size / 2, this.size);
+    pop();
+
+    this.axe.draw();
   }
 }
   
