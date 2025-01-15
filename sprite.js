@@ -38,7 +38,22 @@ class Entity {
       }
     }
   
-    
+    checkHitByAxe(axe) {
+      // If the axe isn't swinging, do nothing
+      if (!axe.isAttacking) return;
+  
+      const circlePositions = axe.getHitboxPositions();
+      const circleRadius    = axe.getCircleRadius();
+  
+      for (let pos of circlePositions) {
+        let d = dist(pos.x, pos.z, this.x, this.z);
+        if (d < circleRadius + this.size / 2) {
+          console.log(`Axe collided with ${this.name}!`);
+          // Apply damage, spawn particle, etc.
+          // Possibly break out after 1 hit, or keep going if multiple hits are possible
+        }
+      }
+    }
   }
   
 class ControllableSprite extends Entity {

@@ -37,30 +37,32 @@ function draw() {
 
   ambientLight(100);
   pointLight(255, 255, 255, 0, 0, 300);
-  // Add lights
 
-  // Render 3D content
   push();
+
   translate(0, 0, mouseHandler.zoomLevel);
   mouseHandler.applyRotation();
   // orbitControl(3, 3, 3);
 
   level.draw();
   innerBox.draw();
+  innerBox.axe.update();
   
   for (let entity of entities) {
     entity.draw();
     entity.checkCollision(innerBox);
+    // if (keyHandler.getAction()){
+    entity.checkHitByAxe(innerBox.axe);
+    // }
+
   }
 
   pop();
+
   handleMovement();
   handleAction();
 
-  // Update GUI layer
   drawUI();
-
-  // Overlay GUI on top
   image(guiCanvas, -width/2, -height/2); // Position GUI layer
 }
 
