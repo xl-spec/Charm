@@ -28,7 +28,7 @@ class Axe {
     // Ends the attack, clearing out hitboxes
     endAttack() {
       this.isAttacking = false;
-      this.hitboxPositions = [];
+    //   this.hitboxPositions = [];
       this.angle = this.idleAngle;
     }
   

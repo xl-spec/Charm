@@ -3,7 +3,7 @@ let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
-let innerBox; // Controllable sprite
+let clairo; // Controllable sprite
 
 
 function setup() {
@@ -20,7 +20,7 @@ function setup() {
   level = new Level(1024, 128, 1024);
 
   // x, y, z, size, color, name (constructor)
-  innerBox = new ControllableSprite(0, 32, 0, 32);
+  clairo = new ControllableSprite(0, 32, 0, 32);
 
   for (let i = 0; i < 20; i++) {
     entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
@@ -45,16 +45,13 @@ function draw() {
   // orbitControl(3, 3, 3);
 
   level.draw();
-  innerBox.draw();
-  innerBox.axe.update();
+  clairo.draw();
+  clairo.axe.update();
   
   for (let entity of entities) {
     entity.draw();
-    entity.checkCollision(innerBox);
-    // if (keyHandler.getAction()){
-    entity.checkHitByAxe(innerBox.axe);
-    // }
-
+    entity.checkCollision(clairo);
+    // entity.checkHitByAxe(clairo.axe);
   }
 
   pop();
@@ -77,7 +74,7 @@ function drawUI() {
 
   // Display positions of entities
   guiCanvas.text(
-    `${innerBox.name}: x: ${Math.floor(innerBox.x)}, z: ${Math.floor(innerBox.z)}}`,
+    `${clairo.name}: x: ${Math.floor(clairo.x)}, z: ${Math.floor(clairo.z)}}`,
     10,
     yOffset
   );
@@ -96,12 +93,12 @@ function drawUI() {
 function handleMovement() {
   const movement = keyHandler.getMovement();
   const speed = 10;
-  innerBox.moveWithDirection(movement, speed);
+  clairo.moveWithDirection(movement, speed);
 }
 
 function handleAction(){
   if (keyHandler.getAction()){
-    innerBox.axe.startAttack();
+    clairo.axe.startAttack();
   }
 }
 

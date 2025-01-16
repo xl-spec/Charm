@@ -126,16 +126,25 @@ class Snowman extends Entity{
   constructor(x, y, z, size, color, name){
     super(x, y, z, size, color, name);
   }
-
+s
   draw(){
     super.draw();
     push();
+      translate(this.x, 26, this.z);
+      fill(0, 0, 0);
+      sphere(this.size / 4, 64, 8);
+    pop();
+    
+    push();
+    translate(this.x, 16, this.z);
+    fill(255);
+    sphere(this.size / 3, 64, 8);
+    pop();
+
+    push();
       translate(this.x, 0, this.z);
       fill(255);
-      // Draw snowman body
-      sphere(this.size / 2);
-      sphere(this.size / 3);
-      sphere(this.size / 4);
+      sphere(this.size / 2, 64, 8);
     pop();
   }
 }
