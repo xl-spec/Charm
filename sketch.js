@@ -3,9 +3,9 @@ let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
-let clairo; // Controllable sprite
+let player; // Controllable sprite
 
-
+// O_O
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
 
@@ -15,16 +15,15 @@ function setup() {
   // input handlers
   mouseHandler = new MouseHandler();
   keyHandler = new KeyHandler();
+  settings = new Settings();
 
   // Initialize level
-  level = new Level(1024, 128, 1024);
+  level = new Level(settings.LEVEL_WIDTH, settings.LEVEL_HEIGHT, settings.LEVEL_DEPTH);
+  player = new ControllableSprite(settings.PLAYER_START_X, settings.PLAYER_START_Y, settings.PLAYER_START_Z, settings.PLAYER_START_SIZE);
 
-  // x, y, z, size, color, name (constructor)
-  clairo = new ControllableSprite(0, 32, 0, 32);
-
-  for (let i = 0; i < 20; i++) {
-    entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
-  }
+  // for (let i = 0; i < 20; i++) {
+  //   entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
+  // }
 
   for (let i = 0; i < 10; i++) {
     entities.push(new Snowman(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Snowman"));
@@ -45,13 +44,13 @@ function draw() {
   // orbitControl(3, 3, 3);
 
   level.draw();
-  clairo.draw();
-  clairo.axe.update();
+  player.draw();
+  player.axe.update();
   
   for (let entity of entities) {
     entity.draw();
-    entity.checkCollision(clairo);
-    // entity.checkHitByAxe(clairo.axe);
+    entity.checkCollision(player);
+    // entity.checkHitByAxe(player.axe);
   }
 
   pop();
@@ -74,14 +73,14 @@ function drawUI() {
 
   // Display positions of entities
   guiCanvas.text(
-    `${clairo.name}: x: ${Math.floor(clairo.x)}, z: ${Math.floor(clairo.z)}}`,
+    `${player.name}: x: ${Math.floor(player.x)}, z: ${Math.floor(player.z)}`,
     10,
     yOffset
   );
   yOffset += 20; // Move down for the next entity
   for (let entity of entities) {
     guiCanvas.text(
-      `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}}`,
+      `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}`,
       10,
       yOffset
     );
@@ -93,12 +92,12 @@ function drawUI() {
 function handleMovement() {
   const movement = keyHandler.getMovement();
   const speed = 10;
-  clairo.moveWithDirection(movement, speed);
+  player.moveWithDirection(movement, speed);
 }
 
 function handleAction(){
   if (keyHandler.getAction()){
-    clairo.axe.startAttack();
+    player.axe.startAttack();
   }
 }
 

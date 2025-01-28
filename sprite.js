@@ -7,8 +7,7 @@ class Entity {
       this.color = color || [100, 200, 255, 150]; // Default color
       this.name = name || "Entity";
       this.hitbox_visible = true;
-
-      this.axe = new Axe("Wood Axe", this);
+      this.face_direction = [0, 0];
     }
   
     move(dx, dy, dz) {
@@ -16,12 +15,12 @@ class Entity {
       this.z -= dz;
     }
   
-    draw() { // maybe rename idk
+    draw() { // maybe rename/rewrite this, this is just a hitbox applied to all sprites
       // this is a circle that represents the hitbox of the entity
       if (this.hitbox_visible){
         push();
           translate(this.x, -65, this.z);
-          rotateX(-HALF_PI);
+          rotateX(HALF_PI);
           noStroke();
           fill(255, 0, 0, 100);
           ellipse(0, 0, this.size, this.size);
@@ -30,14 +29,17 @@ class Entity {
       }
 
     }
-  
+    // might need to... make this an entire class to handle all the different types of collisions
     checkCollision(otherSprite) { // formula for circle collsion
       let distance_between = dist(this.x, this.z, otherSprite.x, otherSprite.z);
       if (distance_between < this.size / 2 + otherSprite.size / 2) {
         console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
       }
     }
-  
+
+
+  //////////////////////////////
+  // REWRITEEEEEEEE
     checkHitByAxe(axe) {
       // If the axe isn't swinging, do nothing
       if (!axe.isAttacking) return;
@@ -59,8 +61,10 @@ class Entity {
 class ControllableSprite extends Entity {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name); // Call the base class constructor
-    this.name = "Clairo";
+    this.name = "Character";
+    this.hitbox_visible = false;
     this.hit_action = false;
+    this.axe = new Axe("Wood Axe", this);
   }
 
   moveWithDirection(direction, speed) {
@@ -95,7 +99,7 @@ class ControllableSprite extends Entity {
   }
 }
   
-class Tree extends Entity { // maybe rename to Tree later
+class Tree extends Entity {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
   }
@@ -105,11 +109,11 @@ class Tree extends Entity { // maybe rename to Tree later
     push();
       translate(this.x, 0, this.z);
 
-      // Draw trunk
+      // trunk
       fill(139, 69, 19); // Brown
       box(this.size / 4, this.size, this.size / 4);
 
-      // Draw branches
+      // branches
       fill(160, 82, 45); // Lighter brown
       translate(0, -this.size / 2, 0);
       rotateZ(PI / 4);
@@ -117,6 +121,8 @@ class Tree extends Entity { // maybe rename to Tree later
       rotateZ(-PI / 2);
       box(this.size / 8, this.size / 2, this.size / 8);
 
+      // will do more later
+      // thinking of doing trunk, 4-8 branches
     pop();
   }
 }
@@ -130,13 +136,13 @@ s
   draw(){
     super.draw();
     push();
-      translate(this.x, 26, this.z);
+      translate(this.x, 30, this.z);
       fill(0, 0, 0);
       sphere(this.size / 4, 64, 8);
     pop();
-    
+
     push();
-    translate(this.x, 16, this.z);
+    translate(this.x, 18, this.z);
     fill(255);
     sphere(this.size / 3, 64, 8);
     pop();

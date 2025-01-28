@@ -49,9 +49,12 @@ class Level {
 class MouseHandler {
     constructor(camera) {
       this.dragStart = null;
-      this.angleX = 0; // Horizontal rotation angle
+      // this.angleX = 0; // Horizontal rotation angle
+      // this.angleY = -60.4; // Vertical rotation angle
+      // this.zoomLevel = 20; // Initial zoom level
+      this.angleX = 20; // Horizontal rotation angle
       this.angleY = -60.4; // Vertical rotation angle
-      this.zoomLevel = 20; // Initial zoom level
+      this.zoomLevel = 400; // Initial zoom level
       // this.camera = camera; maybe add later idk
     }
   
@@ -98,9 +101,9 @@ let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
-let innerBox; // Controllable sprite
+let player; // Controllable sprite
 
-
+// O_O
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
 
@@ -115,7 +118,7 @@ function setup() {
   level = new Level(1024, 128, 1024);
 
   // x, y, z, size, color, name (constructor)
-  innerBox = new ControllableSprite(0, 32, 0, 32);
+  player = new ControllableSprite(0, 32, 0, 32);
 
   for (let i = 0; i < 20; i++) {
     entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
@@ -132,29 +135,29 @@ function draw() {
 
   ambientLight(100);
   pointLight(255, 255, 255, 0, 0, 300);
-  // Add lights
 
-  // Render 3D content
   push();
+
   translate(0, 0, mouseHandler.zoomLevel);
   mouseHandler.applyRotation();
   // orbitControl(3, 3, 3);
 
   level.draw();
-  innerBox.draw();
+  player.draw();
+  player.axe.update();
   
   for (let entity of entities) {
     entity.draw();
-    entity.checkCollision(innerBox);
+    entity.checkCollision(player);
+    // entity.checkHitByAxe(player.axe);
   }
 
   pop();
-  handleMovement();
- 
-  // Update GUI layer
-  drawUI();
 
-  // Overlay GUI on top
+  handleMovement();
+  handleAction();
+
+  drawUI();
   image(guiCanvas, -width/2, -height/2); // Position GUI layer
 }
 
@@ -169,14 +172,14 @@ function drawUI() {
 
   // Display positions of entities
   guiCanvas.text(
-    `${innerBox.name}: x: ${Math.floor(innerBox.x)}, z: ${Math.floor(innerBox.z)}}`,
+    `${player.name}: x: ${Math.floor(player.x)}, z: ${Math.floor(player.z)}`,
     10,
     yOffset
   );
   yOffset += 20; // Move down for the next entity
   for (let entity of entities) {
     guiCanvas.text(
-      `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}}`,
+      `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}`,
       10,
       yOffset
     );
@@ -188,11 +191,13 @@ function drawUI() {
 function handleMovement() {
   const movement = keyHandler.getMovement();
   const speed = 10;
-  innerBox.moveWithDirection(movement, speed);
+  player.moveWithDirection(movement, speed);
 }
 
 function handleAction(){
-  
+  if (keyHandler.getAction()){
+    player.axe.startAttack();
+  }
 }
 
 function keyPressed() {
@@ -240,7 +245,7 @@ class Entity {
       this.z -= dz;
     }
   
-    draw() {
+    draw() { // maybe rename idk
       // this is a circle that represents the hitbox of the entity
       if (this.hitbox_visible){
         push();
@@ -262,7 +267,22 @@ class Entity {
       }
     }
   
-    
+    checkHitByAxe(axe) {
+      // If the axe isn't swinging, do nothing
+      if (!axe.isAttacking) return;
+  
+      const circlePositions = axe.getHitboxPositions();
+      const circleRadius    = axe.getCircleRadius();
+  
+      for (let pos of circlePositions) {
+        let d = dist(pos.x, pos.z, this.x, this.z);
+        if (d < circleRadius + this.size / 2) {
+          console.log(`Axe collided with ${this.name}!`);
+          // Apply damage, spawn particle, etc.
+          // Possibly break out after 1 hit, or keep going if multiple hits are possible
+        }
+      }
+    }
   }
   
 class ControllableSprite extends Entity {
@@ -292,17 +312,19 @@ class ControllableSprite extends Entity {
 
   draw(){
     super.draw();
-      push();
-        translate(this.x, 0, this.z);
-        fill(...this.color);
-        stroke(255);
-        cone(this.size / 2, this.size);
-      pop();
-      // if this.
+
+    push();
+      translate(this.x, 0, this.z);
+      fill(...this.color);
+      stroke(255);
+      cone(this.size / 2, this.size);
+    pop();
+
+    this.axe.draw();
   }
 }
   
-class Tree extends Entity { // maybe rename to Tree later
+class Tree extends Entity {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
   }
@@ -312,11 +334,11 @@ class Tree extends Entity { // maybe rename to Tree later
     push();
       translate(this.x, 0, this.z);
 
-      // Draw trunk
+      // trunk
       fill(139, 69, 19); // Brown
       box(this.size / 4, this.size, this.size / 4);
 
-      // Draw branches
+      // branches
       fill(160, 82, 45); // Lighter brown
       translate(0, -this.size / 2, 0);
       rotateZ(PI / 4);
@@ -324,6 +346,8 @@ class Tree extends Entity { // maybe rename to Tree later
       rotateZ(-PI / 2);
       box(this.size / 8, this.size / 2, this.size / 8);
 
+      // will do more later
+      // thinking of doing trunk, 4-8 branches
     pop();
   }
 }
@@ -333,16 +357,25 @@ class Snowman extends Entity{
   constructor(x, y, z, size, color, name){
     super(x, y, z, size, color, name);
   }
-
+s
   draw(){
     super.draw();
     push();
+      translate(this.x, 26, this.z);
+      fill(0, 0, 0);
+      sphere(this.size / 4, 64, 8);
+    pop();
+
+    push();
+    translate(this.x, 16, this.z);
+    fill(255);
+    sphere(this.size / 3, 64, 8);
+    pop();
+
+    push();
       translate(this.x, 0, this.z);
       fill(255);
-      // Draw snowman body
-      sphere(this.size / 2);
-      sphere(this.size / 3);
-      sphere(this.size / 4);
+      sphere(this.size / 2, 64, 8);
     pop();
   }
 }
