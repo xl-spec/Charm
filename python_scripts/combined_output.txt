@@ -49,12 +49,15 @@ class Level {
 class MouseHandler {
     constructor(camera) {
       this.dragStart = null;
-      // this.angleX = 0; // Horizontal rotation angle
-      // this.angleY = -60.4; // Vertical rotation angle
-      // this.zoomLevel = 20; // Initial zoom level
-      this.angleX = 20; // Horizontal rotation angle
+      this.angleX = 0; // Horizontal rotation angle
       this.angleY = -60.4; // Vertical rotation angle
-      this.zoomLevel = 400; // Initial zoom level
+      this.zoomLevel = 20; // Initial zoom level
+      // this.angleX = 20;
+      // this.angleY = -60;
+      // this.zoomLevel = 400;
+      // this.angleX = 9;
+      // this.angleY = -60;
+      // this.zoomLevel = 400;
       // this.camera = camera; maybe add later idk
     }
   
@@ -73,14 +76,12 @@ class MouseHandler {
         this.angleX -= deltaX * 0.01; // Horizontal rotation
         this.angleY -= deltaY * 0.01; // Vertical rotation
 
-  
         // Update dragStart to the current position for smooth dragging
         this.dragStart = { x: mouseX, y: mouseY };
       }
     }
   
     mouseReleased() {
-      // Stop dragging when the mouse is rewleased
       this.dragStart = null;
     }
   
@@ -89,7 +90,6 @@ class MouseHandler {
     }
 
     applyRotation() {
-      // Apply rotation to the scene
       rotateX(this.angleY);
       rotateY(this.angleX);
     }
@@ -113,12 +113,11 @@ function setup() {
   // input handlers
   mouseHandler = new MouseHandler();
   keyHandler = new KeyHandler();
+  settings = new Settings();
 
   // Initialize level
-  level = new Level(1024, 128, 1024);
-
-  // x, y, z, size, color, name (constructor)
-  player = new ControllableSprite(0, 32, 0, 32);
+  level = new Level(settings.LEVEL_WIDTH, settings.LEVEL_HEIGHT, settings.LEVEL_DEPTH);
+  player = new ControllableSprite(settings.PLAYER_START_X, settings.PLAYER_START_Y, settings.PLAYER_START_Z, settings.PLAYER_START_SIZE);
 
   for (let i = 0; i < 20; i++) {
     entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
@@ -148,8 +147,8 @@ function draw() {
   
   for (let entity of entities) {
     entity.draw();
-    entity.checkCollision(player);
-    // entity.checkHitByAxe(player.axe);
+    // entity.checkCollision(player);
+    entity.checkCollisionAxe(player.axe);
   }
 
   pop();
@@ -236,8 +235,7 @@ class Entity {
       this.color = color || [100, 200, 255, 150]; // Default color
       this.name = name || "Entity";
       this.hitbox_visible = true;
-
-      this.axe = new Axe("Wood Axe", this);
+      this.face_direction = [0, 0];
     }
   
     move(dx, dy, dz) {
@@ -245,12 +243,12 @@ class Entity {
       this.z -= dz;
     }
   
-    draw() { // maybe rename idk
+    draw() { // maybe rename/rewrite this, this is just a hitbox applied to all sprites
       // this is a circle that represents the hitbox of the entity
       if (this.hitbox_visible){
         push();
           translate(this.x, -65, this.z);
-          rotateX(-HALF_PI);
+          rotateX(HALF_PI);
           noStroke();
           fill(255, 0, 0, 100);
           ellipse(0, 0, this.size, this.size);
@@ -259,27 +257,21 @@ class Entity {
       }
 
     }
-  
+    // might need to... make this an entire class to handle all the different types of collisions
     checkCollision(otherSprite) { // formula for circle collsion
       let distance_between = dist(this.x, this.z, otherSprite.x, otherSprite.z);
       if (distance_between < this.size / 2 + otherSprite.size / 2) {
         console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
       }
     }
-  
-    checkHitByAxe(axe) {
-      // If the axe isn't swinging, do nothing
+
+    checkCollisionAxe(axe) {
       if (!axe.isAttacking) return;
-  
-      const circlePositions = axe.getHitboxPositions();
-      const circleRadius    = axe.getCircleRadius();
-  
-      for (let pos of circlePositions) {
-        let d = dist(pos.x, pos.z, this.x, this.z);
-        if (d < circleRadius + this.size / 2) {
+
+      for (let i = 0; i < axe.num_hitboxes; i++) {
+        let d = dist(axe.hitbox_map[i]['x'], axe.hitbox_map[i]['z'], this.x, this.z);
+        if (d  < this.size / 2 + 2) {
           console.log(`Axe collided with ${this.name}!`);
-          // Apply damage, spawn particle, etc.
-          // Possibly break out after 1 hit, or keep going if multiple hits are possible
         }
       }
     }
@@ -288,8 +280,10 @@ class Entity {
 class ControllableSprite extends Entity {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name); // Call the base class constructor
-    this.name = "Clairo";
+    this.name = "Character";
+    this.hitbox_visible = true;
     this.hit_action = false;
+    this.axe = new Axe("Wood Axe", this);
   }
 
   moveWithDirection(direction, speed) {
@@ -361,13 +355,13 @@ s
   draw(){
     super.draw();
     push();
-      translate(this.x, 26, this.z);
+      translate(this.x, 30, this.z);
       fill(0, 0, 0);
       sphere(this.size / 4, 64, 8);
     pop();
 
     push();
-    translate(this.x, 16, this.z);
+    translate(this.x, 18, this.z);
     fill(255);
     sphere(this.size / 3, 64, 8);
     pop();

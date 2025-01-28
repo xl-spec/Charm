@@ -1,15 +1,15 @@
 class MouseHandler {
     constructor(camera) {
       this.dragStart = null;
-      // this.angleX = 0; // Horizontal rotation angle
-      // this.angleY = -60.4; // Vertical rotation angle
-      // this.zoomLevel = 20; // Initial zoom level
+      this.angleX = 0; // Horizontal rotation angle
+      this.angleY = -60.4; // Vertical rotation angle
+      this.zoomLevel = 20; // Initial zoom level
       // this.angleX = 20;
       // this.angleY = -60;
       // this.zoomLevel = 400;
-      this.angleX = 9;
-      this.angleY = -60;
-      this.zoomLevel = 400;
+      // this.angleX = 9;
+      // this.angleY = -60;
+      // this.zoomLevel = 400;
       // this.camera = camera; maybe add later idk
     }
   

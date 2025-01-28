@@ -7,7 +7,8 @@ class Entity {
       this.color = color || [100, 200, 255, 150]; // Default color
       this.name = name || "Entity";
       this.hitbox_visible = true;
-      this.face_direction = [0, 0];
+      this.face_direction = [0, 0]; // might need to make this radians/degrees
+      this.is_alive = true;
     }
   
     move(dx, dy, dz) {
@@ -15,7 +16,9 @@ class Entity {
       this.z -= dz;
     }
   
+
     draw() { // maybe rename/rewrite this, this is just a hitbox applied to all sprites
+      // use buildGeometry() maybe later
       // this is a circle that represents the hitbox of the entity
       if (this.hitbox_visible){
         push();
@@ -37,22 +40,14 @@ class Entity {
       }
     }
 
-
-  //////////////////////////////
-  // REWRITEEEEEEEE
-    checkHitByAxe(axe) {
-      // If the axe isn't swinging, do nothing
+    checkCollisionAxe(axe) {
       if (!axe.isAttacking) return;
-  
-      const circlePositions = axe.getHitboxPositions();
-      const circleRadius    = axe.getCircleRadius();
-  
-      for (let pos of circlePositions) {
-        let d = dist(pos.x, pos.z, this.x, this.z);
-        if (d < circleRadius + this.size / 2) {
+
+      for (let i = 0; i < axe.num_hitboxes; i++) {
+        let d = dist(axe.hitbox_map[i]['x'], axe.hitbox_map[i]['z'], this.x, this.z);
+        if ((d  < this.size / 2 + 2) && (this.is_alive)) { // change with setting variables later
           console.log(`Axe collided with ${this.name}!`);
-          // Apply damage, spawn particle, etc.
-          // Possibly break out after 1 hit, or keep going if multiple hits are possible
+          this.is_alive = false;
         }
       }
     }
@@ -62,7 +57,7 @@ class ControllableSprite extends Entity {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name); // Call the base class constructor
     this.name = "Character";
-    this.hitbox_visible = false;
+    this.hitbox_visible = true;
     this.hit_action = false;
     this.axe = new Axe("Wood Axe", this);
   }
@@ -105,52 +100,86 @@ class Tree extends Entity {
   }
 
   draw() {
-    super.draw();
-    push();
-      translate(this.x, 0, this.z);
+    if (this.is_alive) {
+      super.draw();
+      push();
+        translate(this.x, 0, this.z);
 
-      // trunk
-      fill(139, 69, 19); // Brown
-      box(this.size / 4, this.size, this.size / 4);
+        // trunk
+        fill(139, 69, 19); // Brown
+        box(this.size / 4, this.size, this.size / 4);
 
-      // branches
-      fill(160, 82, 45); // Lighter brown
-      translate(0, -this.size / 2, 0);
-      rotateZ(PI / 4);
-      box(this.size / 8, this.size / 2, this.size / 8);
-      rotateZ(-PI / 2);
-      box(this.size / 8, this.size / 2, this.size / 8);
+        // branches
+        fill(160, 82, 45); // Lighter brown
+        translate(0, -this.size / 2, 0);
+        rotateZ(PI / 4);
+        box(this.size / 8, this.size / 2, this.size / 8);
+        rotateZ(-PI / 2);
+        box(this.size / 8, this.size / 2, this.size / 8);
 
-      // will do more later
-      // thinking of doing trunk, 4-8 branches
-    pop();
+        // will do more later
+        // thinking of doing trunk, 4-8 branches
+      pop();
+    }
   }
 }
 
 class Snowman extends Entity{
   // two attacks, one requires snow ammo and throws snowball at character, other is just a mini weak lunge
+  // will fix all y axis... later in life
   constructor(x, y, z, size, color, name){
     super(x, y, z, size, color, name);
+    this.snowball_count = 0;
+    this.snowball = new Snowball("snowball", this);
   }
-s
+
+  draw(){
+    if (this.is_alive) {
+      super.draw();
+      push();
+        translate(this.x, 28, this.z);
+        fill(255);
+        sphere(this.size / 5, 64, 8);
+      pop();
+
+      push();
+        translate(this.x, 16, this.z);
+        fill(255);
+        sphere(this.size / 3, 64, 8);
+      pop();
+
+      push();
+        translate(this.x, 0, this.z);
+        fill(255);
+        sphere(this.size / 2, 64, 8);
+      pop();
+
+      push();
+        translate(this.x, -16, this.z);
+        fill(50);
+        noStroke();
+        cylinder(this.size, 16);
+      pop();
+    }
+  }
+}
+
+class Snowmound extends Entity{
+  constructor(x, y, z, size, color, name) {
+    super(x, y, z, size, color, name);
+    let snow_clumps = 8; // adjustable amount, maybe in settings? maybe set a max then randomize
+    this.is_alive = false;
+  }
+
   draw(){
     super.draw();
     push();
-      translate(this.x, 30, this.z);
-      fill(0, 0, 0);
-      sphere(this.size / 4, 64, 8);
-    pop();
-
-    push();
-    translate(this.x, 18, this.z);
-    fill(255);
-    sphere(this.size / 3, 64, 8);
-    pop();
-
-    push();
-      translate(this.x, 0, this.z);
+      translate(this.x, -16, this.z);
       fill(255);
-      sphere(this.size / 2, 64, 8);
+      noStroke();
+      ellipsoid(this.size/2, this.size/6);
     pop();
   }
+
+
 }

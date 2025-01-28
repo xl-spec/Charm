@@ -21,12 +21,16 @@ function setup() {
   level = new Level(settings.LEVEL_WIDTH, settings.LEVEL_HEIGHT, settings.LEVEL_DEPTH);
   player = new ControllableSprite(settings.PLAYER_START_X, settings.PLAYER_START_Y, settings.PLAYER_START_Z, settings.PLAYER_START_SIZE);
 
-  // for (let i = 0; i < 20; i++) {
-  //   entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
-  // }
+  for (let i = 0; i < 20; i++) {
+    entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
+  }
 
   for (let i = 0; i < 10; i++) {
     entities.push(new Snowman(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Snowman"));
+  }
+
+  for (let i = 0; i < 10; i++) {
+    entities.push(new Snowmound(random(-400, 400), 32, random(-400, 400), 48, [139, 69, 19, 255], "Snowmound"));
   }
 }
 
@@ -49,8 +53,7 @@ function draw() {
   
   for (let entity of entities) {
     entity.draw();
-    entity.checkCollision(player);
-    // entity.checkHitByAxe(player.axe);
+    entity.checkCollisionAxe(player.axe);
   }
 
   pop();
@@ -63,10 +66,10 @@ function draw() {
 }
 
 function drawUI() {
-  let yOffset = 40;
+  let yOffset = 35;
   guiCanvas.clear();
   guiCanvas.fill(100, 170, 200);
-  guiCanvas.textSize(16);
+  guiCanvas.textSize(12);
 
   // Display FPS
   guiCanvas.text(`FPS: ${Math.floor(frameRate())}`, 10, 20);
@@ -77,14 +80,14 @@ function drawUI() {
     10,
     yOffset
   );
-  yOffset += 20; // Move down for the next entity
+  yOffset += 15; // Move down for the next entity
   for (let entity of entities) {
     guiCanvas.text(
       `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}`,
       10,
       yOffset
     );
-    yOffset += 20;
+    yOffset += 15;
   }
 }
 

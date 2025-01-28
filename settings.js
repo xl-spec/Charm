@@ -11,9 +11,10 @@ class Settings{
     AXE_SIZE = 4;
 
     // Level(width: any, height: any, depth: any): Level
-    LEVEL_WIDTH = 1024;
+    LEVEL_WIDTH = 4096;
     LEVEL_HEIGHT = 128;
-    LEVEL_DEPTH = 1024;
+    LEVEL_DEPTH = 4096;
 
     
 }
+
