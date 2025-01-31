@@ -25,8 +25,8 @@ function setup() {
     entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
   }
 
-  for (let i = 0; i < 10; i++) {
-    entities.push(new Snowman(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Snowman"));
+  for (let i = 0; i < 100; i++) {
+    entities.push(new Snowman(random(-1400, 1400), 32, random(-1400, 1400), 32, [139, 69, 19, 255], "Snowman"));
   }
 
   for (let i = 0; i < 10; i++) {
@@ -53,6 +53,8 @@ function draw() {
   
   for (let entity of entities) {
     entity.draw();
+    // entity.update();
+    entity.update?.(player);
     entity.checkCollisionAxe(player.axe);
   }
 

@@ -124,18 +124,45 @@ class Tree extends Entity {
   }
 }
 
-class Snowman extends Entity{
-  // two attacks, one requires snow ammo and throws snowball at character, other is just a mini weak lunge
-  // will fix all y axis... later in life
-  constructor(x, y, z, size, color, name){
+
+// two attacks, one requires snow ammo and throws snowball at character, other is just a mini weak lunge
+// will fix all y axis... later in life
+
+class Snowman extends Entity {
+  constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
-    this.snowball_count = 0;
     this.snowball = new Snowball("snowball", this);
+    this.hasFired = false;
+    this.fireDelay = 0; // Delay before firing (frames)
   }
 
-  draw(){
+  update(player) {
+    this.shootAtPlayer(player);
+    if (!this.snowball.active) {
+      // console.log(this.fireDelay)
+      this.fireDelay--;
+      // if (this.fireDelay <= 0) {
+        // let target = this.getTarget(player);
+        // if (player) {
+          // this.fireDelay = 100
+      }
+    
+    this.snowball.update();
+  }
+
+  shootAtPlayer(player) {
+    let direction = createVector(player.x - this.x, player.y - this.y, player.z - this.z);
+    direction.normalize(); // Convert to unit vector
+
+    // Give the snowball an initial velocity towards the player
+    this.snowball.startAttack(direction.mult(3)); // Adjust speed as needed
+  }
+
+  draw() {
     if (this.is_alive) {
       super.draw();
+
+      // Snowman body
       push();
         translate(this.x, 28, this.z);
         fill(255);
@@ -160,9 +187,14 @@ class Snowman extends Entity{
         noStroke();
         cylinder(this.size, 16);
       pop();
+
+      // Draw snowball if active
+      this.snowball.draw();
     }
   }
 }
+
+  
 
 class Snowmound extends Entity{
   constructor(x, y, z, size, color, name) {

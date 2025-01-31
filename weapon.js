@@ -2,27 +2,95 @@ class Weapons{
   constructor(name, holder){
     this.name = name;
     this.holder = holder;
+    this.isRanged = false; // maybe need this for melee and ranged weapons later
   }
 }
 
-class Snowball extends Weapons{
-  constructor(name, holder){
+
+
+// used https://jcgoran.github.io/2021/09/27/projectile-motion-3d.html and chatgpt to get an algo that worked
+
+class Snowball extends Weapons {
+  constructor(name, holder) {
     super(name, holder);
     this.isAttacking = false;
-    this.angle = .2;
-    this.swingSpeed = 1;
-    this.hitbox_visible = true;
+    this.position = createVector(holder.x, holder.y, holder.z);
+    this.velocity = createVector(0, 0, 0);
+    // Gravity (downward)
+    this.acceleration = createVector(0, -0.02, 0);
+    this.active = false;
+  }
+  
+  startAttack(target) {
+    if (!this.active) {
+      this.isAttacking = true;
+      this.active = true;
+
+      // Calculate displacement
+      let dx = target.x - this.position.x;
+      let dz = target.z - this.position.z;
+      let dy = target.y - this.position.y;
+
+      // Horizontal distance in the XZ plane
+      let horizontalDist = Math.sqrt(dx*dx + dz*dz);
+
+      // 1) Pick a constant horizontal speed
+      let horizontalSpeed = 2; // Adjust as you like
+
+      // 2) Flight time = horizontal distance / horizontal speed
+      let t = horizontalDist / horizontalSpeed;
+
+      // If the target is exactly at the same XZ spot, t can be 0
+      // Handle that edge case:
+      if (t <= 0) {
+        this.active = false;
+        return;
+      }
+
+      // 3) The needed horizontal velocity components
+      let vx = dx / t;  // so we traverse dx in time t
+      let vz = dz / t;
+
+      // 4) Solve vertical velocity so we land at dy after time t under gravity
+      //    dy = vy*t + (1/2)*a*t^2  =>  vy = (dy - 0.5*a*t^2) / t
+      let a = this.acceleration.y; // This is negative (e.g. -0.02)
+      let vy = (dy - 0.5 * a * t * t) / t;
+
+      // 5) Set our initial velocity
+      this.velocity.set(vx, vy, vz);
+    }
   }
 
-  startAttack() {
-    this.isAttacking = true;
+  update() {
+    if (!this.active) return;
+
+    // Apply gravity
+    this.velocity.add(this.acceleration);
+
+    // Move
+    this.position.add(this.velocity);
+
+    // Deactivate if it goes below some floor level
+    if (this.position.y < -64) {
+      this.active = false;
+    }
+    // setTimeout(() => {
+    //   this.startAttack(this.holder.target); // Ensure snowman has a valid target
+    // }, random(500, 1500));
   }
 
-  endAttack() {
-    this.isAttacking = false;
-    this.angle = this.idleAngle;
+  draw() {
+    if (!this.active) return;
+
+    push();
+    translate(this.position.x, this.position.y, this.position.z);
+    fill(255);
+    noStroke();
+    sphere(4, 16, 8);
+    pop();
   }
 }
+
 
 class Axe extends Weapons {
   constructor(name, holder) {
