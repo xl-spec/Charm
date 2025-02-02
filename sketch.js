@@ -25,7 +25,7 @@ function setup() {
     entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
   }
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 500; i++) {
     entities.push(new Snowman(random(-1400, 1400), 32, random(-1400, 1400), 32, [139, 69, 19, 255], "Snowman"));
   }
 

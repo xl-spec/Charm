@@ -6,9 +6,9 @@ class Entity {
       this.size = size;
       this.color = color || [100, 200, 255, 150]; // Default color
       this.name = name || "Entity";
-      this.hitbox_visible = true;
       this.face_direction = [0, 0]; // might need to make this radians/degrees
       this.is_alive = true;
+      this.hitbox = new Hitbox(this.x, -65, this.z, this.size);
     }
   
     move(dx, dy, dz) {
@@ -19,19 +19,10 @@ class Entity {
 
     draw() { // maybe rename/rewrite this, this is just a hitbox applied to all sprites
       // use buildGeometry() maybe later
-      // this is a circle that represents the hitbox of the entity
-      if (this.hitbox_visible){
-        push();
-          translate(this.x, -65, this.z);
-          rotateX(HALF_PI);
-          noStroke();
-          fill(255, 0, 0, 100);
-          ellipse(0, 0, this.size, this.size);
-        pop();
-
-      }
-
+      this.hitbox.update(this.x, -65, this.z, this.size);
+      this.hitbox.draw();
     }
+
     // might need to... make this an entire class to handle all the different types of collisions
     checkCollision(otherSprite) { // formula for circle collsion
       let distance_between = dist(this.x, this.z, otherSprite.x, otherSprite.z);
@@ -137,26 +128,18 @@ class Snowman extends Entity {
   }
 
   update(player) {
-    this.shootAtPlayer(player);
+    // Fire at the player if the snowball isn't active
     if (!this.snowball.active) {
-      // console.log(this.fireDelay)
-      this.fireDelay--;
-      // if (this.fireDelay <= 0) {
-        // let target = this.getTarget(player);
-        // if (player) {
-          // this.fireDelay = 100
-      }
-    
+      this.shootAtPlayer(player);
+    }
+
     this.snowball.update();
   }
 
   shootAtPlayer(player) {
-    let direction = createVector(player.x - this.x, player.y - this.y, player.z - this.z);
-    direction.normalize(); // Convert to unit vector
-
-    // Give the snowball an initial velocity towards the player
-    this.snowball.startAttack(direction.mult(3)); // Adjust speed as needed
+    this.snowball.startAttack(createVector(player.x, player.y, player.z));
   }
+  
 
   draw() {
     if (this.is_alive) {

@@ -96,6 +96,28 @@ class MouseHandler {
   }
   
 
+class Settings{
+    // Player
+    PLAYER_START_X = 0;
+    PLAYER_START_Y = 32;
+    PLAYER_START_Z = 0;
+    PLAYER_START_SIZE = 32;
+    PLAYER_START_COLOR = 0;
+    PLAYER_START_NAME = 0;
+
+    // AXE
+    AXE_SIZE = 4;
+
+    // Level(width: any, height: any, depth: any): Level
+    LEVEL_WIDTH = 4096;
+    LEVEL_HEIGHT = 128;
+    LEVEL_DEPTH = 4096;
+
+    
+}
+
+
+
 let level; // Level object
 let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
@@ -123,8 +145,12 @@ function setup() {
     entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
   }
 
+  for (let i = 0; i < 500; i++) {
+    entities.push(new Snowman(random(-1400, 1400), 32, random(-1400, 1400), 32, [139, 69, 19, 255], "Snowman"));
+  }
+
   for (let i = 0; i < 10; i++) {
-    entities.push(new Snowman(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Snowman"));
+    entities.push(new Snowmound(random(-400, 400), 32, random(-400, 400), 48, [139, 69, 19, 255], "Snowmound"));
   }
 }
 
@@ -147,7 +173,8 @@ function draw() {
   
   for (let entity of entities) {
     entity.draw();
-    // entity.checkCollision(player);
+    // entity.update();
+    entity.update?.(player);
     entity.checkCollisionAxe(player.axe);
   }
 
@@ -161,10 +188,10 @@ function draw() {
 }
 
 function drawUI() {
-  let yOffset = 40;
+  let yOffset = 35;
   guiCanvas.clear();
   guiCanvas.fill(100, 170, 200);
-  guiCanvas.textSize(16);
+  guiCanvas.textSize(12);
 
   // Display FPS
   guiCanvas.text(`FPS: ${Math.floor(frameRate())}`, 10, 20);
@@ -175,14 +202,14 @@ function drawUI() {
     10,
     yOffset
   );
-  yOffset += 20; // Move down for the next entity
+  yOffset += 15; // Move down for the next entity
   for (let entity of entities) {
     guiCanvas.text(
       `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}`,
       10,
       yOffset
     );
-    yOffset += 20;
+    yOffset += 15;
   }
 }
 
@@ -235,7 +262,8 @@ class Entity {
       this.color = color || [100, 200, 255, 150]; // Default color
       this.name = name || "Entity";
       this.hitbox_visible = true;
-      this.face_direction = [0, 0];
+      this.face_direction = [0, 0]; // might need to make this radians/degrees
+      this.is_alive = true;
     }
   
     move(dx, dy, dz) {
@@ -243,7 +271,9 @@ class Entity {
       this.z -= dz;
     }
   
+
     draw() { // maybe rename/rewrite this, this is just a hitbox applied to all sprites
+      // use buildGeometry() maybe later
       // this is a circle that represents the hitbox of the entity
       if (this.hitbox_visible){
         push();
@@ -270,8 +300,9 @@ class Entity {
 
       for (let i = 0; i < axe.num_hitboxes; i++) {
         let d = dist(axe.hitbox_map[i]['x'], axe.hitbox_map[i]['z'], this.x, this.z);
-        if (d  < this.size / 2 + 2) {
+        if ((d  < this.size / 2 + 2) && (this.is_alive)) { // change with setting variables later
           console.log(`Axe collided with ${this.name}!`);
+          this.is_alive = false;
         }
       }
     }
@@ -324,53 +355,291 @@ class Tree extends Entity {
   }
 
   draw() {
-    super.draw();
-    push();
-      translate(this.x, 0, this.z);
+    if (this.is_alive) {
+      super.draw();
+      push();
+        translate(this.x, 0, this.z);
 
-      // trunk
-      fill(139, 69, 19); // Brown
-      box(this.size / 4, this.size, this.size / 4);
+        // trunk
+        fill(139, 69, 19); // Brown
+        box(this.size / 4, this.size, this.size / 4);
 
-      // branches
-      fill(160, 82, 45); // Lighter brown
-      translate(0, -this.size / 2, 0);
-      rotateZ(PI / 4);
-      box(this.size / 8, this.size / 2, this.size / 8);
-      rotateZ(-PI / 2);
-      box(this.size / 8, this.size / 2, this.size / 8);
+        // branches
+        fill(160, 82, 45); // Lighter brown
+        translate(0, -this.size / 2, 0);
+        rotateZ(PI / 4);
+        box(this.size / 8, this.size / 2, this.size / 8);
+        rotateZ(-PI / 2);
+        box(this.size / 8, this.size / 2, this.size / 8);
 
-      // will do more later
-      // thinking of doing trunk, 4-8 branches
-    pop();
+        // will do more later
+        // thinking of doing trunk, 4-8 branches
+      pop();
+    }
   }
 }
 
-class Snowman extends Entity{
-  // two attacks, one requires snow ammo and throws snowball at character, other is just a mini weak lunge
-  constructor(x, y, z, size, color, name){
+
+// two attacks, one requires snow ammo and throws snowball at character, other is just a mini weak lunge
+// will fix all y axis... later in life
+
+class Snowman extends Entity {
+  constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
+    this.snowball = new Snowball("snowball", this);
+    this.hasFired = false;
+    this.fireDelay = 0; // Delay before firing (frames)
   }
-s
+
+  update(player) {
+    // Fire at the player if the snowball isn't active
+    if (!this.snowball.active) {
+      this.shootAtPlayer(player);
+    }
+
+    this.snowball.update();
+  }
+
+  shootAtPlayer(player) {
+    this.snowball.startAttack(createVector(player.x, player.y, player.z));
+  }
+  
+
+  draw() {
+    if (this.is_alive) {
+      super.draw();
+
+      // Snowman body
+      push();
+        translate(this.x, 28, this.z);
+        fill(255);
+        sphere(this.size / 5, 64, 8);
+      pop();
+
+      push();
+        translate(this.x, 16, this.z);
+        fill(255);
+        sphere(this.size / 3, 64, 8);
+      pop();
+
+      push();
+        translate(this.x, 0, this.z);
+        fill(255);
+        sphere(this.size / 2, 64, 8);
+      pop();
+
+      push();
+        translate(this.x, -16, this.z);
+        fill(50);
+        noStroke();
+        cylinder(this.size, 16);
+      pop();
+
+      // Draw snowball if active
+      this.snowball.draw();
+    }
+  }
+}
+
+  
+
+class Snowmound extends Entity{
+  constructor(x, y, z, size, color, name) {
+    super(x, y, z, size, color, name);
+    let snow_clumps = 8; // adjustable amount, maybe in settings? maybe set a max then randomize
+    this.is_alive = false;
+  }
+
   draw(){
     super.draw();
     push();
-      translate(this.x, 30, this.z);
-      fill(0, 0, 0);
-      sphere(this.size / 4, 64, 8);
-    pop();
-
-    push();
-    translate(this.x, 18, this.z);
-    fill(255);
-    sphere(this.size / 3, 64, 8);
-    pop();
-
-    push();
-      translate(this.x, 0, this.z);
+      translate(this.x, -16, this.z);
       fill(255);
-      sphere(this.size / 2, 64, 8);
+      noStroke();
+      ellipsoid(this.size/2, this.size/6);
+    pop();
+  }
+
+
+}
+
+class Weapons{
+  constructor(name, holder){
+    this.name = name;
+    this.holder = holder;
+    this.isRanged = false; // maybe need this for melee and ranged weapons later
+  }
+}
+
+class Snowball extends Weapons {
+  constructor(name, holder) {
+    super(name, holder);
+    this.isAttacking = false;
+    this.position = createVector(holder.x, holder.y, holder.z);
+    this.velocity = createVector(0, 0, 0);
+    // Gravity (downward)
+    this.acceleration = createVector(0, -0.02, 0);
+    this.active = false;
+  }
+  
+  startAttack(target) {
+    if (!this.active) {
+      this.isAttacking = true;
+      this.active = true;
+
+      // Calculate displacement
+      let dx = target.x - this.position.x;
+      let dz = target.z - this.position.z;
+      let dy = target.y - this.position.y;
+
+      // Horizontal distance in the XZ plane
+      let horizontalDist = Math.sqrt(dx*dx + dz*dz);
+
+      // 1) Pick a constant horizontal speed
+      let horizontalSpeed = 3; 
+
+      // 2) Flight time = horizontal distance / horizontal speed
+      let t = horizontalDist / horizontalSpeed;
+
+      // If the target is exactly at the same XZ spot, t can be 0
+      // Handle that edge case:
+      if (t <= 0) {
+        this.active = false;
+        return;
+      }
+
+      // 3) The needed horizontal velocity components
+      let vx = dx / t;  // so we traverse dx in time t
+      let vz = dz / t;
+
+      // 4) Solve vertical velocity so we land at dy after time t under gravity
+      //    dy = vy*t + (1/2)*a*t^2  =>  vy = (dy - 0.5*a*t^2) / t
+      let a = this.acceleration.y; // This is negative (e.g. -0.02)
+      let vy = (dy - 0.5 * a * t * t) / t;
+
+      // 5) Set our initial velocity
+      this.velocity.set(vx, vy, vz);
+    }
+  }
+
+  update() {
+    if (!this.active) return;
+
+    // Apply gravity
+    this.velocity.add(this.acceleration);
+
+    // Move
+    this.position.add(this.velocity);
+
+    // Deactivate if it goes below some floor level
+    if (this.position.y < -64) {
+      this.isAttacking = false;
+      this.position = createVector(this.holder.x, this.holder.y, this.holder.z);
+      this.active = false;
+    }
+  }
+
+  draw() {
+    if (!this.active) return;
+
+    push();
+    translate(this.position.x, this.position.y, this.position.z);
+    fill(255);
+    noStroke();
+    sphere(4, 8, 8);
     pop();
   }
 }
+
+
+class Axe extends Weapons {
+  constructor(name, holder) {
+    super(name, holder);
+    this.isAttacking = false;
+    this.angle = -.2;
+    this.swingSpeed = 0.1;
+    this.maxAngle = QUARTER_PI*3;
+    this.idleAngle = -.2;
+    this.num_hitboxes = 16;
+    this.hitbox_map = {};
+    this.hitbox_visible = true;
+    this.settings = new Settings(); // this might not be ok but whatever for now
+  }
+
+  startAttack() {
+    this.isAttacking = true;
+  }
+
+  endAttack() {
+    this.isAttacking = false;
+    this.angle = this.idleAngle;
+    this.hitbox_map = {};
+  }
+
+  update() {
+    if (!this.isAttacking) return;
+
+    // Advance the angle
+    this.angle += this.swingSpeed;
+    if (this.angle > this.maxAngle) {
+      this.endAttack();
+    }
+  }
+
+  draw() {
+    // 
+    push();
+    // initial location (y - 16)
+    translate(this.holder.x, -16, this.holder.z);
+      rotateX(this.angle);
+      let yOffset = 31.4; // maybe make this setting later idk
+      let xOffset = 8;
+      translate(xOffset, yOffset, 0);
+      fill(150);
+      stroke(255);
+      cylinder(2, 48); // an axe "handle"
+    pop();
+
+    // MATTHHSSS
+    let radius = this.settings.AXE_SIZE / 2;
+
+    let xBottom = this.holder.x + xOffset;
+    let zBottom = this.holder.z + ((yOffset - 24) * Math.sin(this.angle));
+
+    let xTop = this.holder.x + xOffset;
+    let zTop = this.holder.z + ((yOffset + 24) * Math.sin(this.angle));
+
+    let zLow = min(zBottom, zTop);
+    let zHigh = max(zBottom, zTop);
+
+    let xLow = (zBottom < zTop) ? xBottom : xTop; 
+    let xHigh = (zBottom < zTop) ? xTop : xBottom;
+    let stepX = (xHigh - xLow) / (this.num_hitboxes - 1);
+    let stepZ = ((zHigh - zLow) - 2 * radius) / (this.num_hitboxes - 1);
+
+    // console.log("===== DEBUG =====");
+    // console.log(`z=${zLow}, z=${zHigh}`);
+    // console.log(`stepZ=${stepZ}, radius=${radius}`);
+
+    for (let i = 0; i < this.num_hitboxes; i++) {
+      let zCircle = zLow + radius + i * stepZ;
+      let xCircle = xLow + i * stepX;
+
+      this.hitbox_map[i] = { x: xCircle, y: -65, z: zCircle }; // maybe i need y-axis calculated? idk
+      // console.log(`Circle #${i}: (${xCircle}, ${zCircle})`);
+      if ((this.hitbox_visible) && (this.isAttacking)) {
+      // if (this.hitbox_visible) {
+        push();
+          translate(xCircle, -65, zCircle);
+          rotateX(-HALF_PI);
+          noStroke();
+          fill(255, 0, 0, 100);
+          ellipse(0, 0, this.settings.AXE_SIZE, this.settings.AXE_SIZE);
+        pop();
+      }
+    }
+
+  }
+}
+ 
 

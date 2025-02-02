@@ -3,12 +3,10 @@ class Weapons{
     this.name = name;
     this.holder = holder;
     this.isRanged = false; // maybe need this for melee and ranged weapons later
+    this.hitbox = new Hitbox(this.holder.x, -65, this.holder.z, this.holder.size);
+
   }
 }
-
-
-
-// used https://jcgoran.github.io/2021/09/27/projectile-motion-3d.html and chatgpt to get an algo that worked
 
 class Snowball extends Weapons {
   constructor(name, holder) {
@@ -35,7 +33,7 @@ class Snowball extends Weapons {
       let horizontalDist = Math.sqrt(dx*dx + dz*dz);
 
       // 1) Pick a constant horizontal speed
-      let horizontalSpeed = 2; // Adjust as you like
+      let horizontalSpeed = 3; 
 
       // 2) Flight time = horizontal distance / horizontal speed
       let t = horizontalDist / horizontalSpeed;
@@ -64,29 +62,28 @@ class Snowball extends Weapons {
   update() {
     if (!this.active) return;
 
-    // Apply gravity
     this.velocity.add(this.acceleration);
-
-    // Move
     this.position.add(this.velocity);
 
-    // Deactivate if it goes below some floor level
-    if (this.position.y < -64) {
+    if (this.position.y < -64) { //
+      this.isAttacking = false;
+      this.position = createVector(this.holder.x, this.holder.y, this.holder.z);
       this.active = false;
     }
-    // setTimeout(() => {
-    //   this.startAttack(this.holder.target); // Ensure snowman has a valid target
-    // }, random(500, 1500));
   }
 
   draw() {
     if (!this.active) return;
 
+    this.hitbox.update(this.position.x, -65, this.position.z, 4);
+    console.log(this.hitbox.x)
+    this.hitbox.draw();
+    
     push();
-    translate(this.position.x, this.position.y, this.position.z);
-    fill(255);
-    noStroke();
-    sphere(4, 16, 8);
+      translate(this.position.x, this.position.y, this.position.z);
+      fill(255);
+      noStroke();
+      sphere(4, 8, 8);
     pop();
   }
 }
