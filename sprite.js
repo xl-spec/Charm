@@ -15,33 +15,13 @@ class Entity {
       this.x += dx;
       this.z -= dz;
     }
-  
 
-    draw() { // maybe rename/rewrite this, this is just a hitbox applied to all sprites
+    draw() {
       // use buildGeometry() maybe later
       this.hitbox.update(this.x, -65, this.z, this.size);
       this.hitbox.draw();
     }
 
-    // might need to... make this an entire class to handle all the different types of collisions
-    checkCollision(otherSprite) { // formula for circle collsion
-      let distance_between = dist(this.x, this.z, otherSprite.x, otherSprite.z);
-      if (distance_between < this.size / 2 + otherSprite.size / 2) {
-        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
-      }
-    }
-
-    checkCollisionAxe(axe) {
-      if (!axe.isAttacking) return;
-
-      for (let i = 0; i < axe.num_hitboxes; i++) {
-        let d = dist(axe.hitbox_map[i]['x'], axe.hitbox_map[i]['z'], this.x, this.z);
-        if ((d  < this.size / 2 + 2) && (this.is_alive)) { // change with setting variables later
-          console.log(`Axe collided with ${this.name}!`);
-          this.is_alive = false;
-        }
-      }
-    }
   }
   
 class ControllableSprite extends Entity {
@@ -55,16 +35,14 @@ class ControllableSprite extends Entity {
 
   moveWithDirection(direction, speed) {
     //////////////////////////
-    // lock movement if in action,
+    // lock movement if in action
     let dx = 0, dz = 0;
 
-    // Adjust movement based on direction
     if (direction.left) dx -= 1;
     if (direction.right) dx += 1;
     if (direction.up) dz -= 1;
     if (direction.down) dz += 1;
 
-    // Check for diagonal movement and scale speed
     const isDiagonal = dx !== 0 && dz !== 0;
     const moveSpeed = isDiagonal ? speed / 1.414 : speed; // good enough
 

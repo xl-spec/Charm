@@ -16,6 +16,7 @@ function setup() {
   mouseHandler = new MouseHandler();
   keyHandler = new KeyHandler();
   settings = new Settings();
+  collider = new Collider();
 
   // Initialize level
   level = new Level(settings.LEVEL_WIDTH, settings.LEVEL_HEIGHT, settings.LEVEL_DEPTH);
@@ -26,8 +27,12 @@ function setup() {
   }
 
   for (let i = 0; i < 500; i++) {
-    entities.push(new Snowman(random(-1400, 1400), 32, random(-1400, 1400), 32, [139, 69, 19, 255], "Snowman"));
+    entities.push(new Snowman(random(-settings.LEVEL_WIDTH/2, settings.LEVEL_WIDTH/2), 32, random(-settings.LEVEL_WIDTH/2, settings.LEVEL_WIDTH/2), 32, [139, 69, 19, 255], "Snowman"));
   }
+
+  // for (let i = 0; i < 10; i++) {
+  //   entities.push(new Snowman(random(-140, 140), 32, random(-140, 140), 32, [139, 69, 19, 255], "Snowman"));
+  // }
 
   for (let i = 0; i < 10; i++) {
     entities.push(new Snowmound(random(-400, 400), 32, random(-400, 400), 48, [139, 69, 19, 255], "Snowmound"));
@@ -53,9 +58,8 @@ function draw() {
   
   for (let entity of entities) {
     entity.draw();
-    // entity.update();
     entity.update?.(player);
-    entity.checkCollisionAxe(player.axe);
+    collider.handleCollisions(player, entity);
   }
 
   pop();

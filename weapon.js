@@ -4,7 +4,6 @@ class Weapons{
     this.holder = holder;
     this.isRanged = false; // maybe need this for melee and ranged weapons later
     this.hitbox = new Hitbox(this.holder.x, -65, this.holder.z, this.holder.size);
-
   }
 }
 
@@ -27,13 +26,13 @@ class Snowball extends Weapons {
       // Calculate displacement
       let dx = target.x - this.position.x;
       let dz = target.z - this.position.z;
-      let dy = target.y - this.position.y;
+      let dy = target.y - this.position.y - 32; // minor displacement, will update later
 
       // Horizontal distance in the XZ plane
       let horizontalDist = Math.sqrt(dx*dx + dz*dz);
 
       // 1) Pick a constant horizontal speed
-      let horizontalSpeed = 3; 
+      let horizontalSpeed = 20; 
 
       // 2) Flight time = horizontal distance / horizontal speed
       let t = horizontalDist / horizontalSpeed;
@@ -56,6 +55,7 @@ class Snowball extends Weapons {
 
       // 5) Set our initial velocity
       this.velocity.set(vx, vy, vz);
+      // this.velocity.set(Math.round(vedewx), Math.round(vy), Math.round(vz));
     }
   }
 
@@ -76,7 +76,6 @@ class Snowball extends Weapons {
     if (!this.active) return;
 
     this.hitbox.update(this.position.x, -65, this.position.z, 4);
-    console.log(this.hitbox.x)
     this.hitbox.draw();
     
     push();
@@ -158,21 +157,16 @@ class Axe extends Weapons {
     // console.log(`z=${zLow}, z=${zHigh}`);
     // console.log(`stepZ=${stepZ}, radius=${radius}`);
 
+
+    // this code is just for hitbox of the axe weapon
     for (let i = 0; i < this.num_hitboxes; i++) {
       let zCircle = zLow + radius + i * stepZ;
       let xCircle = xLow + i * stepX;
 
       this.hitbox_map[i] = { x: xCircle, y: -65, z: zCircle }; // maybe i need y-axis calculated? idk
-      // console.log(`Circle #${i}: (${xCircle}, ${zCircle})`);
-      if ((this.hitbox_visible) && (this.isAttacking)) {
-      // if (this.hitbox_visible) {
-        push();
-          translate(xCircle, -65, zCircle);
-          rotateX(-HALF_PI);
-          noStroke();
-          fill(255, 0, 0, 100);
-          ellipse(0, 0, this.settings.AXE_SIZE, this.settings.AXE_SIZE);
-        pop();
+      if (this.isAttacking) {
+        this.hitbox.update(xCircle, -65, zCircle, this.settings.AXE_SIZE);
+        this.hitbox.draw();
       }
     }
 
