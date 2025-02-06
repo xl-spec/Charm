@@ -1,6 +1,6 @@
 class Player extends Creature {
     constructor(x, y, z, size, color, name) {
-      super(x, y, z, size, color, name); // Call the base class constructor
+      super(x = PLAYER_START_X, y = PLAYER_START_Y, z = PLAYER_START_Z, size = PLAYER_START_SIZE, color, name); // Call the base class constructor
       this.name = "Character";
       this.hitbox_visible = true;
       this.hit_action = false;
@@ -27,7 +27,7 @@ class Player extends Creature {
       super.draw();
   
       push();
-        translate(this.x, 0, this.z);
+        translate(this.x, this.y, this.z);
         fill(...this.color);
         stroke(255);
         cone(this.size / 2, this.size);

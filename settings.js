@@ -1,17 +1,15 @@
-class Settings {
-  // Player
-  PLAYER_START_X = 0;
-  PLAYER_START_Y = 32;
-  PLAYER_START_Z = 0;
-  PLAYER_START_SIZE = 32;
-  PLAYER_START_COLOR = 0;
-  PLAYER_START_NAME = 0;
 
-  // AXE
-  AXE_SIZE = 4;
+var PLAYER_START_X = 0;
+var PLAYER_START_Y = 0;
+var PLAYER_START_Z = 0;
+var PLAYER_START_SIZE = 32;
+var PLAYER_START_COLOR = 0;
+var PLAYER_START_NAME = 0;
 
-  // Level(width: any, height: any, depth: any): Level
-  LEVEL_WIDTH = 4096;
-  LEVEL_HEIGHT = 128;
-  LEVEL_DEPTH = 4096;
-}
+var AXE_SIZE = 4;
+
+var LEVEL_WIDTH = 4096;
+var LEVEL_HEIGHT = 128;
+var LEVEL_DEPTH = 4096;
+
+var START_Y = 32;

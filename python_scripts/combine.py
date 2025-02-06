@@ -19,7 +19,10 @@ if __name__ == "__main__":
         "/Users/jack/Desktop/Projects/Charm/mousehandler.js",
         "/Users/jack/Desktop/Projects/Charm/settings.js",
         "/Users/jack/Desktop/Projects/Charm/sketch.js",
-        "/Users/jack/Desktop/Projects/Charm/sprite.js",
+        "/Users/jack/Desktop/Projects/Charm/sprite/artifact.js",
+        "/Users/jack/Desktop/Projects/Charm/sprite/creature.js",
+        "/Users/jack/Desktop/Projects/Charm/sprite/essence.js",
+        "/Users/jack/Desktop/Projects/Charm/sprite/player.js",
         "/Users/jack/Desktop/Projects/Charm/weapon.js"
     ]
     output_filename = "python_scripts/combined_output.txt"  # Replace with your desired output file name

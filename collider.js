@@ -8,7 +8,7 @@ class Collider {
 
   axeCollideSprite(axe, sprite) {
     if (!axe.isAttacking || !sprite.is_alive) return false;
-    const axeRadius = axe.settings.AXE_SIZE / 2;
+    const axeRadius = AXE_SIZE / 2;
     for (let key in axe.hitbox_map) {
       let hitbox = axe.hitbox_map[key];
       if (

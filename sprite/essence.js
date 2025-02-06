@@ -10,11 +10,6 @@ class Essence {
       this.is_alive = true;
       this.hitbox = new Hitbox(this.x, -65, this.z, this.size);
     }
-  
-    move(dx, dy, dz) {
-      this.x += dx;
-      this.z -= dz;
-    }
 
     draw() {
       // use buildGeometry() maybe later

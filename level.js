@@ -1,7 +1,7 @@
 // could make this inherit artifact, or make entire level class? idk
 class Level {
-  constructor(width, height, depth) {
-    this.size = { width, height, depth };
+  constructor(x = LEVEL_WIDTH, y = LEVEL_HEIGHT, z = LEVEL_DEPTH) {
+    this.size = { x, y, z };
   }
 
   draw() {
@@ -9,7 +9,7 @@ class Level {
     translate(0, 0, 0); // Center the level at the origin
     noFill();
     stroke(255); // Outline color
-    box(this.size.width, this.size.height, this.size.depth); // Render the container box
+    box(this.size.x, this.size.y, this.size.z);
     pop();
   }
 }

@@ -104,7 +104,7 @@ class Axe extends Weapons {
     this.num_hitboxes = 16;
     this.hitbox_map = {};
     this.hitbox_visible = true;
-    this.settings = new Settings(); // this might not be ok but whatever for now
+    // this.settings = new Settings(); // this might not be ok but whatever for now
   }
 
   startAttack() {
@@ -142,7 +142,7 @@ class Axe extends Weapons {
     pop();
 
     // MATTHHSSS
-    let radius = this.settings.AXE_SIZE / 2;
+    let radius = 4 / 2;
 
     let xBottom = this.holder.x + xOffset;
     let zBottom = this.holder.z + (yOffset - 24) * Math.sin(this.angle);
@@ -169,7 +169,7 @@ class Axe extends Weapons {
 
       this.hitbox_map[i] = { x: xCircle, y: -65, z: zCircle }; // maybe i need y-axis calculated? idk
       if (this.isAttacking) {
-        this.hitbox.update(xCircle, -65, zCircle, this.settings.AXE_SIZE);
+        this.hitbox.update(xCircle, -65, zCircle, 4);
         this.hitbox.draw();
       }
     }

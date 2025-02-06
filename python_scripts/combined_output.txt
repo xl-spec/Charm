@@ -1,120 +1,85 @@
-class KeyHandler {
-    constructor() {
-      this.movement = { left: false, right: false, up: false, down: false };
-      this.action = false;
-    }
-  
-    handleKeyPressed(key) {
-      if (key === 'a') this.movement.left = true;
-      if (key === 'd') this.movement.right = true;
-      if (key === 'w') this.movement.up = true;
-      if (key === 's') this.movement.down = true;
-      if (key === 'e') this.action = true;
-    }
-  
-    handleKeyReleased(key) {
-      if (key === 'a') this.movement.left = false;
-      if (key === 'd') this.movement.right = false;
-      if (key === 'w') this.movement.up = false;
-      if (key === 's') this.movement.down = false;
-      if (key === 'e') this.action = false;
-    }
-  
-    getMovement() {
-      return this.movement;
-    }
-
-    getAction() {
-      return this.action;
-    }
-  }
-  
-
+// could make this inherit artifact, or make entire level class? idk
 class Level {
-    constructor(width, height, depth) {
-      this.size = { width, height, depth };
-    }
-  
-    draw() {
-      push();
-      translate(0, 0, 0); // Center the level at the origin
-      noFill();
-      stroke(255); // Outline color
-      box(this.size.width, this.size.height, this.size.depth); // Render the container box
-      pop();
-    }
+  constructor(x = LEVEL_WIDTH, y = LEVEL_HEIGHT, z = LEVEL_DEPTH) {
+    this.size = { x, y, z };
   }
-  
+
+  draw() {
+    push();
+    translate(0, 0, 0); // Center the level at the origin
+    noFill();
+    stroke(255); // Outline color
+    box(this.size.x, this.size.y, this.size.z);
+    pop();
+  }
+}
+
 
 class MouseHandler {
-    constructor(camera) {
-      this.dragStart = null;
-      this.angleX = 0; // Horizontal rotation angle
-      this.angleY = -60.4; // Vertical rotation angle
-      this.zoomLevel = 20; // Initial zoom level
-      // this.angleX = 20;
-      // this.angleY = -60;
-      // this.zoomLevel = 400;
-      // this.angleX = 9;
-      // this.angleY = -60;
-      // this.zoomLevel = 400;
-      // this.camera = camera; maybe add later idk
-    }
-  
-    mousePressed() {
-      // Track the initial mouse position on press
+  constructor(camera) {
+    this.dragStart = null;
+    this.angleX = 0; // Horizontal rotation angle
+    this.angleY = -60.4; // Vertical rotation angle
+    this.zoomLevel = 20; // Initial zoom level
+    // this.angleX = 20;
+    // this.angleY = -60;
+    // this.zoomLevel = 400;
+    // this.angleX = 9;
+    // this.angleY = -60;
+    // this.zoomLevel = 400;
+    // this.camera = camera; maybe add later idk
+  }
+
+  mousePressed() {
+    // Track the initial mouse position on press
+    this.dragStart = { x: mouseX, y: mouseY };
+  }
+
+  mouseDragged() {
+    if (this.dragStart) {
+      // Calculate the difference between the current and initial mouse positions
+      let deltaX = mouseX - this.dragStart.x;
+      let deltaY = mouseY - this.dragStart.y;
+
+      // Adjust angles based on mouse movement
+      this.angleX -= deltaX * 0.01; // Horizontal rotation
+      this.angleY -= deltaY * 0.01; // Vertical rotation
+
+      // Update dragStart to the current position for smooth dragging
       this.dragStart = { x: mouseX, y: mouseY };
     }
-  
-    mouseDragged() {
-      if (this.dragStart) {
-        // Calculate the difference between the current and initial mouse positions
-        let deltaX = mouseX - this.dragStart.x;
-        let deltaY = mouseY - this.dragStart.y;
-  
-        // Adjust angles based on mouse movement
-        this.angleX -= deltaX * 0.01; // Horizontal rotation
-        this.angleY -= deltaY * 0.01; // Vertical rotation
-
-        // Update dragStart to the current position for smooth dragging
-        this.dragStart = { x: mouseX, y: mouseY };
-      }
-    }
-  
-    mouseReleased() {
-      this.dragStart = null;
-    }
-  
-    mouseWheel(event) {
-      this.zoomLevel += event.delta * 2; 
-    }
-
-    applyRotation() {
-      rotateX(this.angleY);
-      rotateY(this.angleX);
-    }
   }
-  
 
-class Settings{
-    // Player
-    PLAYER_START_X = 0;
-    PLAYER_START_Y = 32;
-    PLAYER_START_Z = 0;
-    PLAYER_START_SIZE = 32;
-    PLAYER_START_COLOR = 0;
-    PLAYER_START_NAME = 0;
+  mouseReleased() {
+    this.dragStart = null;
+  }
 
-    // AXE
-    AXE_SIZE = 4;
+  mouseWheel(event) {
+    this.zoomLevel += event.delta * 2;
+  }
 
-    // Level(width: any, height: any, depth: any): Level
-    LEVEL_WIDTH = 4096;
-    LEVEL_HEIGHT = 128;
-    LEVEL_DEPTH = 4096;
-
-    
+  applyRotation() {
+    rotateX(this.angleY);
+    rotateY(this.angleX);
+  }
 }
+
+
+
+var PLAYER_START_X = 0;
+var PLAYER_START_Y = 0;
+var PLAYER_START_Z = 0;
+var PLAYER_START_SIZE = 32;
+var PLAYER_START_COLOR = 0;
+var PLAYER_START_NAME = 0;
+
+var AXE_SIZE = 4;
+
+var LEVEL_WIDTH = 4096;
+var LEVEL_HEIGHT = 128;
+var LEVEL_DEPTH = 4096;
+
+var START_Y = 32;
 
 
 
@@ -123,10 +88,10 @@ let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
-let player; // Controllable sprite
+let player1; // Controllable sprite
 
-// O_O
 function setup() {
+  noStroke();
   createCanvas(windowWidth, windowHeight, WEBGL);
 
   // gui
@@ -135,22 +100,20 @@ function setup() {
   // input handlers
   mouseHandler = new MouseHandler();
   keyHandler = new KeyHandler();
-  settings = new Settings();
+  collider = new Collider();
 
   // Initialize level
-  level = new Level(settings.LEVEL_WIDTH, settings.LEVEL_HEIGHT, settings.LEVEL_DEPTH);
-  player = new ControllableSprite(settings.PLAYER_START_X, settings.PLAYER_START_Y, settings.PLAYER_START_Z, settings.PLAYER_START_SIZE);
+  level = new Level();
+
+  player1 = new Player();
 
   for (let i = 0; i < 20; i++) {
-    entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
-  }
-
-  for (let i = 0; i < 500; i++) {
-    entities.push(new Snowman(random(-1400, 1400), 32, random(-1400, 1400), 32, [139, 69, 19, 255], "Snowman"));
-  }
-
-  for (let i = 0; i < 10; i++) {
-    entities.push(new Snowmound(random(-400, 400), 32, random(-400, 400), 48, [139, 69, 19, 255], "Snowmound"));
+    entities.push(
+      new Lamp(),
+      new Tree(),
+      new Snowman(),
+      new Snowmound()
+    );
   }
 }
 
@@ -159,7 +122,7 @@ function draw() {
   background(50);
 
   ambientLight(100);
-  pointLight(255, 255, 255, 0, 0, 300);
+  // pointLight(255, 255, 255, 0, 0, 300);
 
   push();
 
@@ -168,14 +131,13 @@ function draw() {
   // orbitControl(3, 3, 3);
 
   level.draw();
-  player.draw();
-  player.axe.update();
-  
+  player1.draw();
+  player1.axe.update();
+
   for (let entity of entities) {
     entity.draw();
-    // entity.update();
-    entity.update?.(player);
-    entity.checkCollisionAxe(player.axe);
+    entity.update?.(player1);
+    collider.handleCollisions(player1, entity);
   }
 
   pop();
@@ -184,7 +146,7 @@ function draw() {
   handleAction();
 
   drawUI();
-  image(guiCanvas, -width/2, -height/2); // Position GUI layer
+  image(guiCanvas, -width / 2, -height / 2); // Position GUI layer
 }
 
 function drawUI() {
@@ -198,7 +160,7 @@ function drawUI() {
 
   // Display positions of entities
   guiCanvas.text(
-    `${player.name}: x: ${Math.floor(player.x)}, z: ${Math.floor(player.z)}`,
+    `${player1.name}: x: ${Math.floor(player1.x)}, z: ${Math.floor(player1.z)}`,
     10,
     yOffset
   );
@@ -213,16 +175,15 @@ function drawUI() {
   }
 }
 
-
 function handleMovement() {
   const movement = keyHandler.getMovement();
   const speed = 10;
-  player.moveWithDirection(movement, speed);
+  player1.moveWithDirection(movement, speed);
 }
 
-function handleAction(){
-  if (keyHandler.getAction()){
-    player.axe.startAttack();
+function handleAction() {
+  if (keyHandler.getAction()) {
+    player1.axe.startAttack();
   }
 }
 
@@ -251,119 +212,104 @@ function mouseWheel(event) {
 }
 
 
-
-
-class Entity {
-    constructor(x, y, z, size, color, name) {
-      this.x = x;
-      this.y = y;
-      this.z = z;
-      this.size = size;
-      this.color = color || [100, 200, 255, 150]; // Default color
-      this.name = name || "Entity";
-      this.hitbox_visible = true;
-      this.face_direction = [0, 0]; // might need to make this radians/degrees
-      this.is_alive = true;
-    }
-  
-    move(dx, dy, dz) {
-      this.x += dx;
-      this.z -= dz;
-    }
-  
-
-    draw() { // maybe rename/rewrite this, this is just a hitbox applied to all sprites
-      // use buildGeometry() maybe later
-      // this is a circle that represents the hitbox of the entity
-      if (this.hitbox_visible){
-        push();
-          translate(this.x, -65, this.z);
-          rotateX(HALF_PI);
-          noStroke();
-          fill(255, 0, 0, 100);
-          ellipse(0, 0, this.size, this.size);
-        pop();
-
-      }
-
-    }
-    // might need to... make this an entire class to handle all the different types of collisions
-    checkCollision(otherSprite) { // formula for circle collsion
-      let distance_between = dist(this.x, this.z, otherSprite.x, otherSprite.z);
-      if (distance_between < this.size / 2 + otherSprite.size / 2) {
-        console.log(`Collision detected between ${this.name} and ${otherSprite.name}`);
-      }
-    }
-
-    checkCollisionAxe(axe) {
-      if (!axe.isAttacking) return;
-
-      for (let i = 0; i < axe.num_hitboxes; i++) {
-        let d = dist(axe.hitbox_map[i]['x'], axe.hitbox_map[i]['z'], this.x, this.z);
-        if ((d  < this.size / 2 + 2) && (this.is_alive)) { // change with setting variables later
-          console.log(`Axe collided with ${this.name}!`);
-          this.is_alive = false;
-        }
-      }
-    }
-  }
-  
-class ControllableSprite extends Entity {
+class Artifact extends Essence {
   constructor(x, y, z, size, color, name) {
-    super(x, y, z, size, color, name); // Call the base class constructor
-    this.name = "Character";
-    this.hitbox_visible = true;
-    this.hit_action = false;
-    this.axe = new Axe("Wood Axe", this);
-  }
-
-  moveWithDirection(direction, speed) {
-    //////////////////////////
-    // lock movement if in action,
-    let dx = 0, dz = 0;
-
-    // Adjust movement based on direction
-    if (direction.left) dx -= 1;
-    if (direction.right) dx += 1;
-    if (direction.up) dz -= 1;
-    if (direction.down) dz += 1;
-
-    // Check for diagonal movement and scale speed
-    const isDiagonal = dx !== 0 && dz !== 0;
-    const moveSpeed = isDiagonal ? speed / 1.414 : speed; // good enough
-
-    this.move(dx * moveSpeed, 0, dz * moveSpeed);
-  }
-
-  draw(){
-    super.draw();
-
-    push();
-      translate(this.x, 0, this.z);
-      fill(...this.color);
-      stroke(255);
-      cone(this.size / 2, this.size);
-    pop();
-
-    this.axe.draw();
+    super(x, y, z, size, color, name);
+    this.is_alive = false;
   }
 }
-  
-class Tree extends Entity {
+
+class Snowmound extends Artifact {
+  constructor(x, y, z, size, color, name) {
+    super(x, y, z, size, color, name);
+    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.y = 0;
+    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.size = 48;
+    this.color = [139, 69, 19, 255];
+    this.name = "Snowmound";
+    let snow_clumps = 8; // adjustable amount, maybe in settings? maybe set a max then randomize
+  }
+
+  draw() {
+    super.draw();
+    push();
+    translate(this.x, this.y - 16, this.z);
+    fill(255);
+    noStroke();
+    ellipsoid(this.size / 2, this.size / 6);
+    pop();
+  }
+}
+class Lamp extends Essence {
+  constructor(x, y, z, size, color, name) {
+    super(x, y, z, size, color, name);
+    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.y = 16;
+    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.size = 8;
+    this.color = [139, 69, 19, 255];
+    this.name = "Lamp";
+    this.lit = false;
+  }
+
+  draw() {
+    super.draw();
+    push();
+    {
+      translate(this.x, this.y, this.z);
+      fill(20, 100, 255);
+      box(this.size / 2, this.size * 8, this.size / 2);
+    }
+    pop();
+
+    push();
+    {
+        translate(this.x, this.y + this.size*4, this.z);
+        noStroke();
+        fill(255, 255, 50);
+        sphere(this.size);
+        pointLight(255, 255, 255, this.x, this.y + this.size*4, this.z);
+    }
+    pop();
+  }
+}
+
+class Moon extends Essence {}
+class Star extends Essence {}
+
+
+class Creature extends Essence {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
   }
 
-  draw() {
-    if (this.is_alive) {
-      super.draw();
-      push();
-        translate(this.x, 0, this.z);
+  move(dx, dy, dz) {
+    this.x += dx;
+    this.z -= dz;
+  }
+}
 
+class Tree extends Creature {
+  constructor(x, y, z, size, color, name) {
+    super(x, y, z, size, color, name);
+    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.y = 0;
+    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.size = 32;
+    this.name = "Dead Tree";
+  }
+
+  draw() {
+    if (this.is_alive){
+        super.draw();
+        push();
+        translate(this.x, this.y, this.z);
+    
         // trunk
         fill(139, 69, 19); // Brown
         box(this.size / 4, this.size, this.size / 4);
-
+    
         // branches
         fill(160, 82, 45); // Lighter brown
         translate(0, -this.size / 2, 0);
@@ -371,28 +317,29 @@ class Tree extends Entity {
         box(this.size / 8, this.size / 2, this.size / 8);
         rotateZ(-PI / 2);
         box(this.size / 8, this.size / 2, this.size / 8);
-
+    
         // will do more later
         // thinking of doing trunk, 4-8 branches
-      pop();
+        pop();
     }
   }
 }
 
-
-// two attacks, one requires snow ammo and throws snowball at character, other is just a mini weak lunge
-// will fix all y axis... later in life
-
-class Snowman extends Entity {
+class Snowman extends Creature {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
+    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.y = 0;
+    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.size = 32;
+    this.name = "Snowman";
     this.snowball = new Snowball("snowball", this);
     this.hasFired = false;
     this.fireDelay = 0; // Delay before firing (frames)
   }
 
   update(player) {
-    // Fire at the player if the snowball isn't active
+    // Fire at the player if the snowball isn't active, will change this later so that snowman has ai to run over to snowmound to get ammo
     if (!this.snowball.active) {
       this.shootAtPlayer(player);
     }
@@ -403,75 +350,124 @@ class Snowman extends Entity {
   shootAtPlayer(player) {
     this.snowball.startAttack(createVector(player.x, player.y, player.z));
   }
-  
 
   draw() {
-    if (this.is_alive) {
-      super.draw();
-
-      // Snowman body
-      push();
+    if (this.is_alive){
+        super.draw();
+    
+        // Snowman body
+        push();
         translate(this.x, 28, this.z);
         fill(255);
         sphere(this.size / 5, 64, 8);
-      pop();
-
-      push();
+        pop();
+    
+        push();
         translate(this.x, 16, this.z);
         fill(255);
         sphere(this.size / 3, 64, 8);
-      pop();
-
-      push();
+        pop();
+    
+        push();
         translate(this.x, 0, this.z);
         fill(255);
         sphere(this.size / 2, 64, 8);
-      pop();
-
-      push();
+        pop();
+    
+        push();
         translate(this.x, -16, this.z);
         fill(50);
         noStroke();
         cylinder(this.size, 16);
-      pop();
-
-      // Draw snowball if active
-      this.snowball.draw();
+        pop();
+    
+        // Draw snowball if active
+        this.snowball.draw();
     }
   }
 }
 
+class Yeti extends Essence {}
+
+class Pixie extends Essence {}
+
+
+class Essence {
+    constructor(x, y, z, size, color, name) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.size = size;
+      this.color = color || [100, 200, 255, 150]; // Default color
+      this.name = name || "Essence";
+      this.face_direction = [0, 0]; // might need to make this radians/degrees
+      this.is_alive = true;
+      this.hitbox = new Hitbox(this.x, -65, this.z, this.size);
+    }
+
+    draw() {
+      // use buildGeometry() maybe later
+      this.hitbox.update(this.x, -65, this.z, this.size);
+      this.hitbox.draw();
+    }
+  }
+
+class Player extends Creature {
+    constructor(x, y, z, size, color, name) {
+      super(x = PLAYER_START_X, y = PLAYER_START_Y, z = PLAYER_START_Z, size = PLAYER_START_SIZE, color, name); // Call the base class constructor
+      this.name = "Character";
+      this.hitbox_visible = true;
+      this.hit_action = false;
+      this.axe = new Axe("Wood Axe", this);
+    }
   
-
-class Snowmound extends Entity{
-  constructor(x, y, z, size, color, name) {
-    super(x, y, z, size, color, name);
-    let snow_clumps = 8; // adjustable amount, maybe in settings? maybe set a max then randomize
-    this.is_alive = false;
+    moveWithDirection(direction, speed) {
+      //////////////////////////
+      // lock movement if in action
+      let dx = 0, dz = 0;
+  
+      if (direction.left) dx -= 1;
+      if (direction.right) dx += 1;
+      if (direction.up) dz -= 1;
+      if (direction.down) dz += 1;
+  
+      const isDiagonal = dx !== 0 && dz !== 0;
+      const moveSpeed = isDiagonal ? speed / 1.414 : speed; // good enough
+  
+      this.move(dx * moveSpeed, 0, dz * moveSpeed);
+    }
+  
+    draw(){
+      super.draw();
+  
+      push();
+        translate(this.x, this.y, this.z);
+        fill(...this.color);
+        stroke(255);
+        cone(this.size / 2, this.size);
+      pop();
+  
+      this.axe.draw();
+    }
   }
+    
 
-  draw(){
-    super.draw();
-    push();
-      translate(this.x, -16, this.z);
-      fill(255);
-      noStroke();
-      ellipsoid(this.size/2, this.size/6);
-    pop();
-  }
-
-
-}
-
-class Weapons{
-  constructor(name, holder){
+class Weapons {
+  constructor(name, holder) {
     this.name = name;
     this.holder = holder;
     this.isRanged = false; // maybe need this for melee and ranged weapons later
+    this.hitbox = new Hitbox(
+      this.holder.x,
+      -65,
+      this.holder.z,
+      this.holder.size
+    );
   }
 }
 
 class Snowball extends Weapons {
+  // 2nd weapon for snowman needed
   constructor(name, holder) {
     super(name, holder);
     this.isAttacking = false;
@@ -481,7 +477,7 @@ class Snowball extends Weapons {
     this.acceleration = createVector(0, -0.02, 0);
     this.active = false;
   }
-  
+
   startAttack(target) {
     if (!this.active) {
       this.isAttacking = true;
@@ -490,13 +486,13 @@ class Snowball extends Weapons {
       // Calculate displacement
       let dx = target.x - this.position.x;
       let dz = target.z - this.position.z;
-      let dy = target.y - this.position.y;
+      let dy = target.y - this.position.y - 32; // minor displacement, will update later
 
       // Horizontal distance in the XZ plane
-      let horizontalDist = Math.sqrt(dx*dx + dz*dz);
+      let horizontalDist = Math.sqrt(dx * dx + dz * dz);
 
       // 1) Pick a constant horizontal speed
-      let horizontalSpeed = 3; 
+      let horizontalSpeed = 5;
 
       // 2) Flight time = horizontal distance / horizontal speed
       let t = horizontalDist / horizontalSpeed;
@@ -509,7 +505,7 @@ class Snowball extends Weapons {
       }
 
       // 3) The needed horizontal velocity components
-      let vx = dx / t;  // so we traverse dx in time t
+      let vx = dx / t; // so we traverse dx in time t
       let vz = dz / t;
 
       // 4) Solve vertical velocity so we land at dy after time t under gravity
@@ -525,14 +521,11 @@ class Snowball extends Weapons {
   update() {
     if (!this.active) return;
 
-    // Apply gravity
     this.velocity.add(this.acceleration);
-
-    // Move
     this.position.add(this.velocity);
 
-    // Deactivate if it goes below some floor level
     if (this.position.y < -64) {
+      //
       this.isAttacking = false;
       this.position = createVector(this.holder.x, this.holder.y, this.holder.z);
       this.active = false;
@@ -541,6 +534,9 @@ class Snowball extends Weapons {
 
   draw() {
     if (!this.active) return;
+
+    this.hitbox.update(this.position.x, -65, this.position.z, 4);
+    this.hitbox.draw();
 
     push();
     translate(this.position.x, this.position.y, this.position.z);
@@ -551,19 +547,18 @@ class Snowball extends Weapons {
   }
 }
 
-
 class Axe extends Weapons {
   constructor(name, holder) {
     super(name, holder);
     this.isAttacking = false;
-    this.angle = -.2;
+    this.angle = -0.2;
     this.swingSpeed = 0.1;
-    this.maxAngle = QUARTER_PI*3;
-    this.idleAngle = -.2;
+    this.maxAngle = QUARTER_PI * 3;
+    this.idleAngle = -0.2;
     this.num_hitboxes = 16;
     this.hitbox_map = {};
     this.hitbox_visible = true;
-    this.settings = new Settings(); // this might not be ok but whatever for now
+    // this.settings = new Settings(); // this might not be ok but whatever for now
   }
 
   startAttack() {
@@ -587,59 +582,52 @@ class Axe extends Weapons {
   }
 
   draw() {
-    // 
+    //
     push();
     // initial location (y - 16)
     translate(this.holder.x, -16, this.holder.z);
-      rotateX(this.angle);
-      let yOffset = 31.4; // maybe make this setting later idk
-      let xOffset = 8;
-      translate(xOffset, yOffset, 0);
-      fill(150);
-      stroke(255);
-      cylinder(2, 48); // an axe "handle"
+    rotateX(this.angle);
+    let yOffset = 31.4; // maybe make this setting later idk
+    let xOffset = 8;
+    translate(xOffset, yOffset, 0);
+    fill(150);
+    stroke(255);
+    cylinder(2, 48); // an axe "handle"
     pop();
 
     // MATTHHSSS
-    let radius = this.settings.AXE_SIZE / 2;
+    let radius = 4 / 2;
 
     let xBottom = this.holder.x + xOffset;
-    let zBottom = this.holder.z + ((yOffset - 24) * Math.sin(this.angle));
+    let zBottom = this.holder.z + (yOffset - 24) * Math.sin(this.angle);
 
     let xTop = this.holder.x + xOffset;
-    let zTop = this.holder.z + ((yOffset + 24) * Math.sin(this.angle));
+    let zTop = this.holder.z + (yOffset + 24) * Math.sin(this.angle);
 
     let zLow = min(zBottom, zTop);
     let zHigh = max(zBottom, zTop);
 
-    let xLow = (zBottom < zTop) ? xBottom : xTop; 
-    let xHigh = (zBottom < zTop) ? xTop : xBottom;
+    let xLow = zBottom < zTop ? xBottom : xTop;
+    let xHigh = zBottom < zTop ? xTop : xBottom;
     let stepX = (xHigh - xLow) / (this.num_hitboxes - 1);
-    let stepZ = ((zHigh - zLow) - 2 * radius) / (this.num_hitboxes - 1);
+    let stepZ = (zHigh - zLow - 2 * radius) / (this.num_hitboxes - 1);
 
     // console.log("===== DEBUG =====");
     // console.log(`z=${zLow}, z=${zHigh}`);
     // console.log(`stepZ=${stepZ}, radius=${radius}`);
 
+    // this code is just for hitbox of the axe weapon
     for (let i = 0; i < this.num_hitboxes; i++) {
       let zCircle = zLow + radius + i * stepZ;
       let xCircle = xLow + i * stepX;
 
       this.hitbox_map[i] = { x: xCircle, y: -65, z: zCircle }; // maybe i need y-axis calculated? idk
-      // console.log(`Circle #${i}: (${xCircle}, ${zCircle})`);
-      if ((this.hitbox_visible) && (this.isAttacking)) {
-      // if (this.hitbox_visible) {
-        push();
-          translate(xCircle, -65, zCircle);
-          rotateX(-HALF_PI);
-          noStroke();
-          fill(255, 0, 0, 100);
-          ellipse(0, 0, this.settings.AXE_SIZE, this.settings.AXE_SIZE);
-        pop();
+      if (this.isAttacking) {
+        this.hitbox.update(xCircle, -65, zCircle, 4);
+        this.hitbox.draw();
       }
     }
-
   }
 }
- 
+
 

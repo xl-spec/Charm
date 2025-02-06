@@ -1,3 +1,4 @@
+
 let level; // Level object
 let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
@@ -5,8 +6,8 @@ let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
 let player1; // Controllable sprite
 
-// O_O
 function setup() {
+  noStroke();
   createCanvas(windowWidth, windowHeight, WEBGL);
 
   // gui
@@ -15,62 +16,19 @@ function setup() {
   // input handlers
   mouseHandler = new MouseHandler();
   keyHandler = new KeyHandler();
-  settings = new Settings();
   collider = new Collider();
 
   // Initialize level
-  level = new Level(
-    settings.LEVEL_WIDTH,
-    settings.LEVEL_HEIGHT,
-    settings.LEVEL_DEPTH
-  );
-  player1 = new Player(
-    settings.PLAYER_START_X,
-    settings.PLAYER_START_Y,
-    settings.PLAYER_START_Z,
-    settings.PLAYER_START_SIZE
-  );
+  level = new Level();
+
+  player1 = new Player();
 
   for (let i = 0; i < 20; i++) {
     entities.push(
-      new Tree(
-        random(-400, 400),
-        32,
-        random(-400, 400),
-        32,
-        [139, 69, 19, 255],
-        "Dead Tree"
-      )
-    );
-  }
-
-  for (let i = 0; i < 10; i++) {
-    entities.push(
-      new Snowman(
-        random(-settings.LEVEL_WIDTH / 2, settings.LEVEL_WIDTH / 2),
-        32,
-        random(-settings.LEVEL_WIDTH / 2, settings.LEVEL_WIDTH / 2),
-        32,
-        [139, 69, 19, 255],
-        "Snowman"
-      )
-    );
-  }
-
-  // for (let i = 0; i < 10; i++) {
-  //   entities.push(new Snowman(random(-140, 140), 32, random(-140, 140), 32, [139, 69, 19, 255], "Snowman"));
-  // }
-
-  for (let i = 0; i < 10; i++) {
-    entities.push(
-      new Snowmound(
-        random(-400, 400),
-        32,
-        random(-400, 400),
-        48,
-        [139, 69, 19, 255],
-        "Snowmound"
-      )
+      new Lamp(),
+      new Tree(),
+      new Snowman(),
+      new Snowmound()
     );
   }
 }
@@ -79,8 +37,9 @@ function draw() {
   clear();
   background(50);
 
-  ambientLight(1000);
-  pointLight(255, 255, 255, 0, 0, 300);
+  // ambientLight(20);
+  // directionalLight(255, 255, 255, 0, 64, 0);
+  // pointLight(255, 255, 255, 0, 0, 300);
 
   push();
 
@@ -93,6 +52,9 @@ function draw() {
   player1.axe.update();
 
   for (let entity of entities) {
+    if (entity instanceof Lamp && entity.lit) {
+      pointLight(255, 255, 150, entity.x, entity.y + entity.size * 4, entity.z);
+    }
     entity.draw();
     entity.update?.(player1);
     collider.handleCollisions(player1, entity);
