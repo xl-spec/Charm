@@ -3,7 +3,7 @@ let guiCanvas; // GUI canvas for 2D overlay
 let mouseHandler; // MouseHandler object
 let keyHandler; // KeyHandler object
 let entities = []; // Array of sprites
-let player; // Controllable sprite
+let player1; // Controllable sprite
 
 // O_O
 function setup() {
@@ -19,15 +19,42 @@ function setup() {
   collider = new Collider();
 
   // Initialize level
-  level = new Level(settings.LEVEL_WIDTH, settings.LEVEL_HEIGHT, settings.LEVEL_DEPTH);
-  player = new ControllableSprite(settings.PLAYER_START_X, settings.PLAYER_START_Y, settings.PLAYER_START_Z, settings.PLAYER_START_SIZE);
+  level = new Level(
+    settings.LEVEL_WIDTH,
+    settings.LEVEL_HEIGHT,
+    settings.LEVEL_DEPTH
+  );
+  player1 = new Player(
+    settings.PLAYER_START_X,
+    settings.PLAYER_START_Y,
+    settings.PLAYER_START_Z,
+    settings.PLAYER_START_SIZE
+  );
 
   for (let i = 0; i < 20; i++) {
-    entities.push(new Tree(random(-400, 400), 32, random(-400, 400), 32, [139, 69, 19, 255], "Dead Tree"));
+    entities.push(
+      new Tree(
+        random(-400, 400),
+        32,
+        random(-400, 400),
+        32,
+        [139, 69, 19, 255],
+        "Dead Tree"
+      )
+    );
   }
 
-  for (let i = 0; i < 500; i++) {
-    entities.push(new Snowman(random(-settings.LEVEL_WIDTH/2, settings.LEVEL_WIDTH/2), 32, random(-settings.LEVEL_WIDTH/2, settings.LEVEL_WIDTH/2), 32, [139, 69, 19, 255], "Snowman"));
+  for (let i = 0; i < 10; i++) {
+    entities.push(
+      new Snowman(
+        random(-settings.LEVEL_WIDTH / 2, settings.LEVEL_WIDTH / 2),
+        32,
+        random(-settings.LEVEL_WIDTH / 2, settings.LEVEL_WIDTH / 2),
+        32,
+        [139, 69, 19, 255],
+        "Snowman"
+      )
+    );
   }
 
   // for (let i = 0; i < 10; i++) {
@@ -35,7 +62,16 @@ function setup() {
   // }
 
   for (let i = 0; i < 10; i++) {
-    entities.push(new Snowmound(random(-400, 400), 32, random(-400, 400), 48, [139, 69, 19, 255], "Snowmound"));
+    entities.push(
+      new Snowmound(
+        random(-400, 400),
+        32,
+        random(-400, 400),
+        48,
+        [139, 69, 19, 255],
+        "Snowmound"
+      )
+    );
   }
 }
 
@@ -43,7 +79,7 @@ function draw() {
   clear();
   background(50);
 
-  ambientLight(100);
+  ambientLight(1000);
   pointLight(255, 255, 255, 0, 0, 300);
 
   push();
@@ -53,13 +89,13 @@ function draw() {
   // orbitControl(3, 3, 3);
 
   level.draw();
-  player.draw();
-  player.axe.update();
-  
+  player1.draw();
+  player1.axe.update();
+
   for (let entity of entities) {
     entity.draw();
-    entity.update?.(player);
-    collider.handleCollisions(player, entity);
+    entity.update?.(player1);
+    collider.handleCollisions(player1, entity);
   }
 
   pop();
@@ -68,7 +104,7 @@ function draw() {
   handleAction();
 
   drawUI();
-  image(guiCanvas, -width/2, -height/2); // Position GUI layer
+  image(guiCanvas, -width / 2, -height / 2); // Position GUI layer
 }
 
 function drawUI() {
@@ -82,7 +118,7 @@ function drawUI() {
 
   // Display positions of entities
   guiCanvas.text(
-    `${player.name}: x: ${Math.floor(player.x)}, z: ${Math.floor(player.z)}`,
+    `${player1.name}: x: ${Math.floor(player1.x)}, z: ${Math.floor(player1.z)}`,
     10,
     yOffset
   );
@@ -97,16 +133,15 @@ function drawUI() {
   }
 }
 
-
 function handleMovement() {
   const movement = keyHandler.getMovement();
   const speed = 10;
-  player.moveWithDirection(movement, speed);
+  player1.moveWithDirection(movement, speed);
 }
 
-function handleAction(){
-  if (keyHandler.getAction()){
-    player.axe.startAttack();
+function handleAction() {
+  if (keyHandler.getAction()) {
+    player1.axe.startAttack();
   }
 }
 
@@ -133,5 +168,3 @@ function mouseReleased() {
 function mouseWheel(event) {
   mouseHandler.mouseWheel(event);
 }
-
-

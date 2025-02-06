@@ -1,13 +1,19 @@
-class Weapons{
-  constructor(name, holder){
+class Weapons {
+  constructor(name, holder) {
     this.name = name;
     this.holder = holder;
     this.isRanged = false; // maybe need this for melee and ranged weapons later
-    this.hitbox = new Hitbox(this.holder.x, -65, this.holder.z, this.holder.size);
+    this.hitbox = new Hitbox(
+      this.holder.x,
+      -65,
+      this.holder.z,
+      this.holder.size
+    );
   }
 }
 
 class Snowball extends Weapons {
+  // 2nd weapon for snowman needed
   constructor(name, holder) {
     super(name, holder);
     this.isAttacking = false;
@@ -17,7 +23,7 @@ class Snowball extends Weapons {
     this.acceleration = createVector(0, -0.02, 0);
     this.active = false;
   }
-  
+
   startAttack(target) {
     if (!this.active) {
       this.isAttacking = true;
@@ -29,10 +35,10 @@ class Snowball extends Weapons {
       let dy = target.y - this.position.y - 32; // minor displacement, will update later
 
       // Horizontal distance in the XZ plane
-      let horizontalDist = Math.sqrt(dx*dx + dz*dz);
+      let horizontalDist = Math.sqrt(dx * dx + dz * dz);
 
       // 1) Pick a constant horizontal speed
-      let horizontalSpeed = 20; 
+      let horizontalSpeed = 5;
 
       // 2) Flight time = horizontal distance / horizontal speed
       let t = horizontalDist / horizontalSpeed;
@@ -45,7 +51,7 @@ class Snowball extends Weapons {
       }
 
       // 3) The needed horizontal velocity components
-      let vx = dx / t;  // so we traverse dx in time t
+      let vx = dx / t; // so we traverse dx in time t
       let vz = dz / t;
 
       // 4) Solve vertical velocity so we land at dy after time t under gravity
@@ -55,7 +61,6 @@ class Snowball extends Weapons {
 
       // 5) Set our initial velocity
       this.velocity.set(vx, vy, vz);
-      // this.velocity.set(Math.round(vedewx), Math.round(vy), Math.round(vz));
     }
   }
 
@@ -65,7 +70,8 @@ class Snowball extends Weapons {
     this.velocity.add(this.acceleration);
     this.position.add(this.velocity);
 
-    if (this.position.y < -64) { //
+    if (this.position.y < -64) {
+      //
       this.isAttacking = false;
       this.position = createVector(this.holder.x, this.holder.y, this.holder.z);
       this.active = false;
@@ -77,25 +83,24 @@ class Snowball extends Weapons {
 
     this.hitbox.update(this.position.x, -65, this.position.z, 4);
     this.hitbox.draw();
-    
+
     push();
-      translate(this.position.x, this.position.y, this.position.z);
-      fill(255);
-      noStroke();
-      sphere(4, 8, 8);
+    translate(this.position.x, this.position.y, this.position.z);
+    fill(255);
+    noStroke();
+    sphere(4, 8, 8);
     pop();
   }
 }
-
 
 class Axe extends Weapons {
   constructor(name, holder) {
     super(name, holder);
     this.isAttacking = false;
-    this.angle = -.2;
+    this.angle = -0.2;
     this.swingSpeed = 0.1;
-    this.maxAngle = QUARTER_PI*3;
-    this.idleAngle = -.2;
+    this.maxAngle = QUARTER_PI * 3;
+    this.idleAngle = -0.2;
     this.num_hitboxes = 16;
     this.hitbox_map = {};
     this.hitbox_visible = true;
@@ -123,40 +128,39 @@ class Axe extends Weapons {
   }
 
   draw() {
-    // 
+    //
     push();
     // initial location (y - 16)
     translate(this.holder.x, -16, this.holder.z);
-      rotateX(this.angle);
-      let yOffset = 31.4; // maybe make this setting later idk
-      let xOffset = 8;
-      translate(xOffset, yOffset, 0);
-      fill(150);
-      stroke(255);
-      cylinder(2, 48); // an axe "handle"
+    rotateX(this.angle);
+    let yOffset = 31.4; // maybe make this setting later idk
+    let xOffset = 8;
+    translate(xOffset, yOffset, 0);
+    fill(150);
+    stroke(255);
+    cylinder(2, 48); // an axe "handle"
     pop();
 
     // MATTHHSSS
     let radius = this.settings.AXE_SIZE / 2;
 
     let xBottom = this.holder.x + xOffset;
-    let zBottom = this.holder.z + ((yOffset - 24) * Math.sin(this.angle));
+    let zBottom = this.holder.z + (yOffset - 24) * Math.sin(this.angle);
 
     let xTop = this.holder.x + xOffset;
-    let zTop = this.holder.z + ((yOffset + 24) * Math.sin(this.angle));
+    let zTop = this.holder.z + (yOffset + 24) * Math.sin(this.angle);
 
     let zLow = min(zBottom, zTop);
     let zHigh = max(zBottom, zTop);
 
-    let xLow = (zBottom < zTop) ? xBottom : xTop; 
-    let xHigh = (zBottom < zTop) ? xTop : xBottom;
+    let xLow = zBottom < zTop ? xBottom : xTop;
+    let xHigh = zBottom < zTop ? xTop : xBottom;
     let stepX = (xHigh - xLow) / (this.num_hitboxes - 1);
-    let stepZ = ((zHigh - zLow) - 2 * radius) / (this.num_hitboxes - 1);
+    let stepZ = (zHigh - zLow - 2 * radius) / (this.num_hitboxes - 1);
 
     // console.log("===== DEBUG =====");
     // console.log(`z=${zLow}, z=${zHigh}`);
     // console.log(`stepZ=${stepZ}, radius=${radius}`);
-
 
     // this code is just for hitbox of the axe weapon
     for (let i = 0; i < this.num_hitboxes; i++) {
@@ -169,7 +173,5 @@ class Axe extends Weapons {
         this.hitbox.draw();
       }
     }
-
   }
 }
- 

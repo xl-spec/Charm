@@ -12,6 +12,8 @@ def combine_files(file_list, output_file):
 
 if __name__ == "__main__":
     file_list = [
+        "/Users/jack/Desktop/Projects/Charm/collider.js"
+        "/Users/jack/Desktop/Projects/Charm/hitbox.js"
         "/Users/jack/Desktop/Projects/Charm/keyhandler.js",
         "/Users/jack/Desktop/Projects/Charm/level.js",
         "/Users/jack/Desktop/Projects/Charm/mousehandler.js",
