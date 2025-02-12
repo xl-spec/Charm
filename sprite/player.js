@@ -12,10 +12,10 @@ class Player extends Creature {
       // lock movement if in action
       let dx = 0, dz = 0;
   
-      if (direction.left) dx -= 1;
-      if (direction.right) dx += 1;
-      if (direction.up) dz -= 1;
-      if (direction.down) dz += 1;
+      if (direction.west) dx -= 1;
+      if (direction.east) dx += 1;
+      if (direction.north) dz -= 1;
+      if (direction.south) dz += 1;
   
       const isDiagonal = dx !== 0 && dz !== 0;
       const moveSpeed = isDiagonal ? speed / 1.414 : speed; // good enough

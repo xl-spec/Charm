@@ -55,7 +55,6 @@ class Lamp extends Essence {
         noStroke();
         emissiveMaterial(255, 255, 50);
         sphere(this.size);
-  
     }
     pop();
     

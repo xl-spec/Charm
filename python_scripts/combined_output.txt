@@ -107,26 +107,33 @@ function setup() {
 
   player1 = new Player();
 
+  for (let i = 0; i < 2; i++) {
+    entities.push(
+      new Lamp()
+    );
+  }
   for (let i = 0; i < 20; i++) {
     entities.push(
-      new Lamp(),
+      // new Lamp(),
       new Tree(),
       new Snowman(),
       new Snowmound()
     );
   }
+
 }
 
 function draw() {
   clear();
   background(50);
 
-  ambientLight(100);
+  // ambientLight(20);
+  // directionalLight(255, 255, 255, 0, 64, 0);
   // pointLight(255, 255, 255, 0, 0, 300);
 
   push();
 
-  translate(0, 0, mouseHandler.zoomLevel);
+  // translate(0, 0, mouseHandler.zoomLevel);
   mouseHandler.applyRotation();
   // orbitControl(3, 3, 3);
 
@@ -135,6 +142,10 @@ function draw() {
   player1.axe.update();
 
   for (let entity of entities) {
+    // if (entity instanceof Lamp && entity.lit) {
+    //   pointLight(255, 255, 150, entity.x, entity.y + entity.size * 4, entity.z);
+    // }
+    pointLight(255, 255, 150, player1.x, player1.y, player1.z);
     entity.draw();
     entity.update?.(player1);
     collider.handleCollisions(player1, entity);
@@ -250,7 +261,7 @@ class Lamp extends Essence {
     this.size = 8;
     this.color = [139, 69, 19, 255];
     this.name = "Lamp";
-    this.lit = false;
+    this.lit = true;
   }
 
   draw() {
@@ -265,13 +276,13 @@ class Lamp extends Essence {
 
     push();
     {
-        translate(this.x, this.y + this.size*4, this.z);
+        translate(this.x, this.y + this.size * 4, this.z);
         noStroke();
-        fill(255, 255, 50);
+        emissiveMaterial(255, 255, 50);
         sphere(this.size);
-        pointLight(255, 255, 255, this.x, this.y + this.size*4, this.z);
     }
     pop();
+    
   }
 }
 
@@ -426,10 +437,10 @@ class Player extends Creature {
       // lock movement if in action
       let dx = 0, dz = 0;
   
-      if (direction.left) dx -= 1;
-      if (direction.right) dx += 1;
-      if (direction.up) dz -= 1;
-      if (direction.down) dz += 1;
+      if (direction.west) dx -= 1;
+      if (direction.east) dx += 1;
+      if (direction.north) dz -= 1;
+      if (direction.south) dz += 1;
   
       const isDiagonal = dx !== 0 && dz !== 0;
       const moveSpeed = isDiagonal ? speed / 1.414 : speed; // good enough
