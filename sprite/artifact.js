@@ -1,4 +1,4 @@
-class Artifact extends Essence {
+class Artifact extends myObject {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
     this.is_alive = false;
@@ -8,9 +8,12 @@ class Artifact extends Essence {
 class Snowmound extends Artifact {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
-    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
-    this.y = 0;
-    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.y = 0;
+    // this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.x = x;
+    this.y = y;
+    this.z = z;
     this.size = 48;
     this.color = [139, 69, 19, 255];
     this.name = "Snowmound";
@@ -27,12 +30,15 @@ class Snowmound extends Artifact {
     pop();
   }
 }
-class Lamp extends Essence {
+class Lamp extends Artifact {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
-    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
-    this.y = 16;
-    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.y = 16;
+    // this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.x = x;
+    this.y = y;
+    this.z = z;
     this.size = 8;
     this.color = [139, 69, 19, 255];
     this.name = "Lamp";
@@ -53,7 +59,7 @@ class Lamp extends Essence {
     {
         translate(this.x, this.y + this.size * 4, this.z);
         noStroke();
-        emissiveMaterial(255, 255, 50);
+        // emissiveMaterial(255, 255, 50);
         sphere(this.size);
     }
     pop();
@@ -61,5 +67,5 @@ class Lamp extends Essence {
   }
 }
 
-class Moon extends Essence {}
-class Star extends Essence {}
+class Moon extends Artifact {}
+class Star extends Artifact {}

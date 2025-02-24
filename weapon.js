@@ -131,7 +131,7 @@ class Axe extends Weapons {
     //
     push();
     // initial location (y - 16)
-    translate(this.holder.x, -16, this.holder.z);
+    translate(this.holder.x, this.holder.y - 16, this.holder.z);
     rotateX(this.angle);
     let yOffset = 31.4; // maybe make this setting later idk
     let xOffset = 8;

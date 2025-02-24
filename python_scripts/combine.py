@@ -21,7 +21,7 @@ if __name__ == "__main__":
         "/Users/jack/Desktop/Projects/Charm/sketch.js",
         "/Users/jack/Desktop/Projects/Charm/sprite/artifact.js",
         "/Users/jack/Desktop/Projects/Charm/sprite/creature.js",
-        "/Users/jack/Desktop/Projects/Charm/sprite/essence.js",
+        "/Users/jack/Desktop/Projects/Charm/sprite/myObject.js",
         "/Users/jack/Desktop/Projects/Charm/sprite/player.js",
         "/Users/jack/Desktop/Projects/Charm/weapon.js"
     ]

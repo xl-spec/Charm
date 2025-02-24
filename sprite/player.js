@@ -10,17 +10,19 @@ class Player extends Creature {
     moveWithDirection(direction, speed) {
       //////////////////////////
       // lock movement if in action
-      let dx = 0, dz = 0;
+      let dx = 0, dy = 0, dz = 0;
   
       if (direction.west) dx -= 1;
       if (direction.east) dx += 1;
-      if (direction.north) dz -= 1;
-      if (direction.south) dz += 1;
+      if (direction.north) dz += 1;
+      if (direction.south) dz -= 1;
+      if (direction.up) dy += 1;
+      if (direction.down) dy -= 1;
   
       const isDiagonal = dx !== 0 && dz !== 0;
       const moveSpeed = isDiagonal ? speed / 1.414 : speed; // good enough
   
-      this.move(dx * moveSpeed, 0, dz * moveSpeed);
+      this.move(dx * moveSpeed, dy * moveSpeed, dz * moveSpeed);
     }
   
     draw(){
@@ -28,7 +30,7 @@ class Player extends Creature {
   
       push();
         translate(this.x, this.y, this.z);
-        fill(...this.color);
+        fill(this.color);
         stroke(255);
         cone(this.size / 2, this.size);
       pop();

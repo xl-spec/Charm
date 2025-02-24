@@ -8,6 +8,7 @@ let player1; // Controllable sprite
 function setup() {
   noStroke();
   createCanvas(windowWidth, windowHeight, WEBGL);
+  camera(0, -200, 250);
 
   // gui
   guiCanvas = createGraphics(windowWidth, windowHeight);
@@ -22,15 +23,31 @@ function setup() {
 
   player1 = new Player();
 
-  for (let i = 0; i < 2; i++) {
-    entities.push(new Lamp());
+  for (let i = 0; i < 5; i++) {
+    entities.push(new Lamp(
+      random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2),
+      0,
+      random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2)
+    ));
   }
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 100; i++) {
     entities.push(
       // new Lamp(),
-      new Tree(),
-      new Snowman(),
-      new Snowmound()
+      new Tree(
+        random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2),
+        0,
+        random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2)
+      ),
+      new Snowman(
+        random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2),
+        0,
+        random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2)
+      ),
+      new Snowmound(
+        random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2),
+        0,
+        random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2)
+      )
     );
   }
 }
@@ -38,27 +55,31 @@ function setup() {
 function draw() {
   clear();
   background(50);
-
-  // ambientLight(20);
+  orbitControl();
+  ambientLight(1);
   // directionalLight(255, 255, 255, 0, 64, 0);
   // pointLight(255, 255, 255, 0, 0, 300);
 
   push();
-
-  // translate(0, 0, mouseHandler.zoomLevel);
-  mouseHandler.applyRotation();
+  
+  mouseHandler.applyRotation(player1);
   // orbitControl(3, 3, 3);
 
   level.draw();
   player1.draw();
   player1.axe.update();
 
-  // pointLight(255, 255, 150, player1.x, player1.y, player1.z);
-  directionalLight(255, 255, 150, player1.x, player1.y, player1.z);
+  // cylinder(10, 100);
+  // pointLight(255, 0, 10, player1.x, player1.y + 32, player1.z);
+  // console.log(player1.x, player1.y, player1.z);
+
+  // directionalLight(255, 255, 150, player1.x, player1.y, player1.z);
   for (let entity of entities) {
-    // if (entity instanceof Lamp && entity.lit) {
-    //   pointLight(255, 255, 150, entity.x, entity.y + entity.size * 4, entity.z);
-    // }
+    if (entity instanceof Lamp && entity.lit) {
+      // console.log(entity.x, entity.y, entity.z);
+      pointLight(0, 255, 255, entity.x, entity.y + 64, entity.z);
+
+    }
     entity.draw();
     entity.update?.(player1);
     collider.handleCollisions(player1, entity);
@@ -71,6 +92,32 @@ function draw() {
 
   // drawUI();
   image(guiCanvas, -width / 2, -height / 2); // Position GUI layer
+}
+
+function drawUI() {
+  let yOffset = 35;
+  guiCanvas.clear();
+  guiCanvas.fill(100, 170, 200);
+  guiCanvas.textSize(12);
+
+  // Display FPS
+  guiCanvas.text(`FPS: ${Math.floor(frameRate())}`, 10, 20);
+
+  // Display positions of entities
+  guiCanvas.text(
+    `${player1.name}: x: ${Math.floor(player1.x)}, y: ${Math.floor(player1.y)}, z: ${Math.floor(player1.z)}`,
+    10,
+    yOffset
+  );
+  // yOffset += 15; // Move down for the next entity
+  // for (let entity of entities) {
+  //   guiCanvas.text(
+  //     `${entity.name}: x: ${Math.floor(entity.x)}, z: ${Math.floor(entity.z)}`,
+  //     10,
+  //     yOffset
+  //   );
+  //   yOffset += 15;
+  // }
 }
 
 function handleMovement() {

@@ -1,20 +1,24 @@
-class Creature extends Essence {
+class Creature extends myObject {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
   }
 
   move(dx, dy, dz) {
     this.x += dx;
-    this.z -= dz;
+    this.y += dy;
+    this.z += dz;
   }
 }
 
 class Tree extends Creature {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
-    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
-    this.y = 0;
-    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.y = 0;
+    // this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.x = x;
+    this.y = y;
+    this.z = z;
     this.size = 32;
     this.name = "Dead Tree";
   }
@@ -47,9 +51,12 @@ class Tree extends Creature {
 class Snowman extends Creature {
   constructor(x, y, z, size, color, name) {
     super(x, y, z, size, color, name);
-    this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
-    this.y = 0;
-    this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.x = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    // this.y = 0;
+    // this.z = random(-LEVEL_WIDTH / 12, LEVEL_WIDTH / 12);
+    this.x = x;
+    this.y = y;
+    this.z = z;
     this.size = 32;
     this.name = "Snowman";
     this.snowball = new Snowball("snowball", this);
@@ -106,6 +113,6 @@ class Snowman extends Creature {
   }
 }
 
-class Yeti extends Essence {}
+class Yeti extends Creature {}
 
-class Pixie extends Essence {}
+class Pixie extends Creature {}

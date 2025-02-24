@@ -17,7 +17,7 @@ class Hitbox {
   draw() {
     if (!this.visible) return;
     push();
-    translate(this.x, this.y, this.z);
+    translate(this.x, this.y - 64, this.z);
     rotateX(HALF_PI);
     noStroke();
     fill(255, 0, 0, 100);
