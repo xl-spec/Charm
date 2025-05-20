@@ -8,6 +8,10 @@ class Creature extends myObject {
     this.y += dy;
     this.z += dz;
   }
+
+  checkActive(){ // runs every frame to check if the creature is alive
+    pass
+  }
 }
 
 class Tree extends Creature {

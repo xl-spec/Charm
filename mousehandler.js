@@ -5,7 +5,7 @@ class MouseHandler {
     
     this.angleX = 20;
     this.angleY = -60;
-    this.zoomLevel = 400;
+    this.zoomLevel = -300;
     // this.angleX = 9;
     // this.angleY = -60;
     // this.zoomLevel = 400;
@@ -24,7 +24,7 @@ class MouseHandler {
       let deltaY = mouseY - this.dragStart.y;
 
       // Adjust angles based on mouse movement
-      this.angleX += deltaX * 0.01; // Horizontal rotation
+      this.angleX -= deltaX * 0.01; // Horizontal rotation
       this.angleY -= deltaY * 0.01; // Vertical rotation
 
       // Update dragStart to the current position for smooth dragging

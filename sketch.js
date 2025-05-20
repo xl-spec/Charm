@@ -8,7 +8,7 @@ let player1; // Controllable sprite
 function setup() {
   noStroke();
   createCanvas(windowWidth, windowHeight, WEBGL);
-  camera(0, -200, 250);
+  // camera(0, -200, 250);
 
   // gui
   guiCanvas = createGraphics(windowWidth, windowHeight);
@@ -21,13 +21,14 @@ function setup() {
   // Initialize level
   level = new Level();
 
-  player1 = new Player();
+  player1 = new PlayerTest();
 
   for (let i = 0; i < 5; i++) {
     entities.push(new Lamp(
       random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2),
       0,
-      random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2)
+      random(-LEVEL_WIDTH/2, LEVEL_WIDTH/2),
+      128
     ));
   }
   for (let i = 0; i < 100; i++) {
@@ -55,11 +56,12 @@ function setup() {
 function draw() {
   clear();
   background(50);
-  orbitControl();
+  // orbitControl();
   ambientLight(1);
   // directionalLight(255, 255, 255, 0, 64, 0);
   // pointLight(255, 255, 255, 0, 0, 300);
 
+  pointLight(255, 255, 255, player1.x, player1.y + 32, player1.z);
   push();
   
   mouseHandler.applyRotation(player1);
@@ -70,14 +72,15 @@ function draw() {
   player1.axe.update();
 
   // cylinder(10, 100);
-  // pointLight(255, 0, 10, player1.x, player1.y + 32, player1.z);
   // console.log(player1.x, player1.y, player1.z);
+
+  
 
   // directionalLight(255, 255, 150, player1.x, player1.y, player1.z);
   for (let entity of entities) {
     if (entity instanceof Lamp && entity.lit) {
       // console.log(entity.x, entity.y, entity.z);
-      pointLight(0, 255, 255, entity.x, entity.y + 64, entity.z);
+      // pointLight(0, 255, 255, entity.x, entity.y + 64, eantity.z);
 
     }
     entity.draw();
@@ -122,7 +125,7 @@ function drawUI() {
 
 function handleMovement() {
   const movement = keyHandler.getMovement();
-  const speed = 10;
+  const speed = 50;
   player1.moveWithDirection(movement, speed);
 }
 
