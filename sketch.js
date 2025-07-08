@@ -1,13 +1,17 @@
 new Q5("global");
 function setup() {
-    createCanvas(windowWidth, windowHeight)
+    // createCanvas(windowWidth, windowHeight)
+    
     // createCanvas(800, 600)
+    // const dpr = window.devicePixelRatio || 1;
+    createCanvas(windowWidth, windowHeight);
+    // pixelDensity(dpr);
 
     mouseHandler = new MouseHandler()
     keyHandler = new KeyHandler()
     // collider = new Collider(); // if you have collision handling implemented
 
-    level = new Level(LEVEL_WIDTH*2, LEVEL_HEIGHT*2)
+    level = new Level(LEVEL_WIDTH, LEVEL_HEIGHT)
     level.generate_layers();
     player1 = new Player(
         PLAYER_START_X,
@@ -37,6 +41,7 @@ function draw() {
 
     mouseHandler.applyTranslation()
     translate(width / 2 - player1.x, height / 2 - player1.y)
+    // console.log(player1.x, player1.y)
     level.adjust_layer(player1)
     level.draw();
     player1.draw()
@@ -57,7 +62,7 @@ function draw() {
 
 function handleMovement() {
     const movement = keyHandler.getMovement()
-    const speed = 20 // Adjust speed as needed
+    const speed = PLAYER_SPEED
     player1.moveWithDirection(movement, speed)
 }
 

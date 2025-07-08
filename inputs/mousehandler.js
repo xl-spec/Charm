@@ -11,7 +11,7 @@ class MouseHandler {
     mouseDragged() {
         if (this.dragStart) {
             let current = createVector(mouseX, mouseY)
-            let delta = p5.Vector.sub(current, this.dragStart)
+            let delta = Vector.sub(current, this.dragStart)
             this.offset.add(delta)
             this.dragStart = current
         }

@@ -19,24 +19,25 @@ class Player extends Creature {
             dx -= 1
             this.pivot_xyz[0] -= 1
         }
-        if (direction.east) {
+        else if (direction.east) {
             dx += 1
             this.pivot_xyz[0] += 1
         }
-        if (direction.north) {
+        else if (direction.north) {
             dy -= 1
             this.pivot_xyz[1] -= 1
         }
-        if (direction.south) {
+        else if (direction.south) {
             dy += 1
             this.pivot_xyz[1] += 1
         }
         const isDiagonal = dx !== 0 && dy !== 0
-        const moveSpeed = isDiagonal ? speed / 1.414 : speed
+        const moveSpeed = isDiagonal ? speed / 1.41421356237309504 : speed
         this.move(dx * moveSpeed, dy * moveSpeed)
     }
 
     draw() {
+        // console.log(this.x, this.y)
         // Optional: call the base hitbox drawing for debugging
         super.draw()
         push()

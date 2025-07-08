@@ -233,7 +233,7 @@ class MyObject {
         this.y = y
         this.size = size
         this.color = color || [100, 200, 255, 150]
-        this.name = name || 'Essence'
+        this.name = name || 'myObject'
         this.is_alive = true
         this.hitbox = new Hitbox(this.x, this.y, this.size)
     }
