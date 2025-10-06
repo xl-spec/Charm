@@ -22,6 +22,11 @@ class MouseHandler {
     }
 
     mouseWheel(event) {
+        const k = 0.0015
+        ZOOMIES -= event.delta * k
+        ZOOMIES = constrain(ZOOMIES, MIN_ZOOM, MAX_ZOOM)
+        // Prevent the page from scrolling
+        return false
     }
 
     applyTranslation() {

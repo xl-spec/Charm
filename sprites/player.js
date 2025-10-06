@@ -18,16 +18,13 @@ class Player extends Creature {
         if (direction.west) {
             dx -= 1
             this.pivot_xyz[0] -= 1
-        }
-        else if (direction.east) {
+        } else if (direction.east) {
             dx += 1
             this.pivot_xyz[0] += 1
-        }
-        else if (direction.north) {
+        } else if (direction.north) {
             dy -= 1
             this.pivot_xyz[1] -= 1
-        }
-        else if (direction.south) {
+        } else if (direction.south) {
             dy += 1
             this.pivot_xyz[1] += 1
         }

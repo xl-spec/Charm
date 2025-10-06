@@ -43,7 +43,7 @@ class MouseHandler {
     mouseDragged() {
         if (this.dragStart) {
             let current = createVector(mouseX, mouseY)
-            let delta = p5.Vector.sub(current, this.dragStart)
+            let delta = Vector.sub(current, this.dragStart)
             this.offset.add(delta)
             this.dragStart = current
         }
@@ -53,8 +53,7 @@ class MouseHandler {
         this.dragStart = null
     }
 
-    mouseWheel(event) {
-    }
+    mouseWheel(event) {}
 
     applyTranslation() {
         // Apply panning offset
@@ -69,8 +68,8 @@ var PLAYER_START_Y = 100
 var PLAYER_START_SIZE = 64
 var PLAYER_START_COLOR = [0, 0, 255]
 
-var LEVEL_WIDTH = 800
-var LEVEL_HEIGHT = 600
+var LEVEL_WIDTH = 1280
+var LEVEL_HEIGHT = 800
 
 let level // Level object
 let guiCanvas // 2D overlay graphics
@@ -286,7 +285,6 @@ class Player extends Creature {
     }
 
     draw() {
-        // Optional: call the base hitbox drawing for debugging
         super.draw()
         push()
         translate(this.x, this.y)
@@ -405,56 +403,74 @@ class Snowball extends Weapons {
 File name: level.js 
 class Level {
     constructor(w = LEVEL_WIDTH, h = LEVEL_HEIGHT) {
-        this.size = { w, h };
-        this.layers = [];
-        this.previousPivot = null; // Track the player's previous position
+        this.size = { w, h }
+        this.layers = []
+        this.previousPivot = null // Track the player's previous position
     }
 
     generate_layers() {
-        const spacing = 25; // Distance between rectangles on all sides
+        const spacing = 15 // Distance between rectangles on all sides
+        let decrement = 1 // need to linearly scale this with width and height (do later)
         for (let i = 0; i < 20; i++) {
-            const x = i * spacing;
-            const y = i * spacing;
-            const width = this.size.w - 2 * x;
-            const height = this.size.h - 2 * y;
+            let x = i * spacing
+            let y = i * spacing
+            let width = this.size.w - 2 * x + decrement
+            let height = this.size.h - 2 * y + decrement
 
-            let layer = new Layer(width, height, x, y);
-            layer.layerN = i + 1;
-            layer.color = [10 + i * 20, 200 - i * 20, 255, 150];
-            this.layers.push(layer);
+            let layer = new Layer(
+                width,
+                height,
+                x - decrement / 2,
+                y - decrement / 2
+            )
+            layer.layerN = i + 1
+            layer.color = [10 + i * 15, 200 - i * 20, 255, 150]
+            this.layers.push(layer)
+            decrement *= 1.3
         }
+        console.log('layer 0 w: ' + this.layers[0].size.w)
+        console.log('layer 1 w: ' + this.layers[1].size.w)
+        console.log('layer 2 w: ' + this.layers[2].size.w)
+
+        console.log('layer 0 h: ' + this.layers[0].size.h)
+        console.log('layer 1 h: ' + this.layers[1].size.h)
+        console.log('layer 2 h: ' + this.layers[2].size.h)
+        // console.log(layer.size.h)
     }
 
-    
     adjust_layer(playerObj) {
         if (!this.previousPivot) {
-            this.previousPivot = [...playerObj.pivot_xyz];
-            return;
+            this.previousPivot = [...playerObj.pivot_xyz]
+            return
         }
 
-        const dx = playerObj.pivot_xyz[0] - this.previousPivot[0];
-        const dy = playerObj.pivot_xyz[1] - this.previousPivot[1];
+        const dx = playerObj.pivot_xyz[0] - this.previousPivot[0]
+        const dy = playerObj.pivot_xyz[1] - this.previousPivot[1]
 
         if (dx !== 0 || dy !== 0) {
             this.layers.forEach((layer, i) => {
-                const factor = (i + 1) / this.layers.length; // Scale factor based on layer number
-                layer.position.x += dx * factor * 10; // Adjust x position by delta
-                layer.position.y += dy * factor * 10; // Adjust y position by delta
-            });
+                const factor = (i + 1) / this.layers.length // Scale factor based on layer number
+                layer.position.x += dx * factor * 10 // Adjust x position by delta
+                layer.position.y += dy * factor * 10 // Adjust y position by delta
+            })
 
-            this.previousPivot = [...playerObj.pivot_xyz];
+            this.previousPivot = [...playerObj.pivot_xyz]
         }
     }
 
-    
     draw() {
         for (let layer of this.layers) {
-            push();
-            translate(0, 0);
-            noFill();
-            stroke(layer.color[0], layer.color[1], layer.color[2], layer.color[3]);
-            rect(layer.position.x, layer.position.y, layer.size.w, layer.size.h);
-            pop();
+            push()
+            // translate(0, 0)
+            noFill()
+            stroke(
+                layer.color[0],
+                layer.color[1],
+                layer.color[2],
+                layer.color[3]
+            )
+            rect(layer.position.x, layer.position.y, layer.size.w, layer.size.h)
+            pop()
         }
     }
 }
@@ -480,18 +496,64 @@ class Layer {
 }
  
 
+File name: ui.js 
+class UI {
+    constructor(w = LEVEL_WIDTH, h = LEVEL_HEIGHT, x = 0, y = 0) {
+        this.size = { w, h }
+        this.position = { x, y }
+        this.color = [10, 200, 255, 150]
+        this.thickness = 30
+    }
+
+    draw() {
+        // noStroke()
+
+        beginShape()
+
+        vertex(this.position.x, this.position.y)
+        vertex(this.position.x + this.size.w, this.position.y)
+        vertex(this.position.x + this.size.w, this.position.y + this.size.h)
+        vertex(this.position.x, this.position.y + this.size.h)
+
+        beginContour()
+        // fill(...this.color)
+        vertex(
+            this.position.x + this.thickness,
+            this.position.y + this.thickness
+        )
+        vertex(
+            this.position.x + this.size.w - this.thickness,
+            this.position.y + this.thickness
+        )
+        vertex(
+            this.position.x + this.size.w - this.thickness,
+            this.position.y + this.size.h - this.thickness
+        )
+        vertex(
+            this.position.x + this.thickness,
+            this.position.y + this.size.h - this.thickness
+        )
+
+        endContour()
+
+        endShape(CLOSE)
+    }
+}
+ 
+
 File name: sketch.js 
-new Q5("global");
+// new Q5('global')
 function setup() {
-    createCanvas(windowWidth, windowHeight)
-    // createCanvas(800, 600)
+    // createCanvas(windowWidth, windowHeight)
+    createCanvas(LEVEL_WIDTH, LEVEL_HEIGHT)
 
     mouseHandler = new MouseHandler()
     keyHandler = new KeyHandler()
     // collider = new Collider(); // if you have collision handling implemented
 
-    level = new Level(LEVEL_WIDTH*2, LEVEL_HEIGHT*2)
-    level.generate_layers();
+    level = new Level(LEVEL_WIDTH, LEVEL_HEIGHT)
+    ui = new UI(LEVEL_WIDTH, LEVEL_HEIGHT)
+    level.generate_layers()
     player1 = new Player(
         PLAYER_START_X,
         PLAYER_START_Y,
@@ -501,6 +563,7 @@ function setup() {
     )
     player1.x = width / 2
     player1.y = height / 2
+
     // Create some sample entities
     // for (let i = 0; i < 5; i++) {
     //   entities.push(new Lamp(random(0, LEVEL_WIDTH), random(0, LEVEL_HEIGHT), 16, [255, 255, 0], "Lamp"));
@@ -518,10 +581,11 @@ function draw() {
 
     push()
 
+    ui.draw()
     mouseHandler.applyTranslation()
     translate(width / 2 - player1.x, height / 2 - player1.y)
     level.adjust_layer(player1)
-    level.draw();
+    level.draw()
     player1.draw()
     player1.axe.update()
 

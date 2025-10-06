@@ -1,18 +1,15 @@
-new Q5("global");
+new Q5('global')
 function setup() {
     // createCanvas(windowWidth, windowHeight)
-    
-    // createCanvas(800, 600)
-    // const dpr = window.devicePixelRatio || 1;
-    createCanvas(windowWidth, windowHeight);
-    // pixelDensity(dpr);
+    createCanvas(LEVEL_WIDTH, LEVEL_HEIGHT)
 
     mouseHandler = new MouseHandler()
     keyHandler = new KeyHandler()
     // collider = new Collider(); // if you have collision handling implemented
 
     level = new Level(LEVEL_WIDTH, LEVEL_HEIGHT)
-    level.generate_layers();
+    ui = new UI(LEVEL_WIDTH, LEVEL_HEIGHT)
+    level.generate_layers()
     player1 = new Player(
         PLAYER_START_X,
         PLAYER_START_Y,
@@ -22,6 +19,7 @@ function setup() {
     )
     player1.x = width / 2
     player1.y = height / 2
+
     // Create some sample entities
     // for (let i = 0; i < 5; i++) {
     //   entities.push(new Lamp(random(0, LEVEL_WIDTH), random(0, LEVEL_HEIGHT), 16, [255, 255, 0], "Lamp"));
@@ -41,9 +39,9 @@ function draw() {
 
     mouseHandler.applyTranslation()
     translate(width / 2 - player1.x, height / 2 - player1.y)
-    // console.log(player1.x, player1.y)
+    scale(ZOOMIES)
     level.adjust_layer(player1)
-    level.draw();
+    level.draw()
     player1.draw()
     player1.axe.update()
 
@@ -55,14 +53,16 @@ function draw() {
     //     }
     // }
     pop()
+    ui.draw()
 
     handleMovement()
     handleAction()
+    handleZoom()
 }
 
 function handleMovement() {
     const movement = keyHandler.getMovement()
-    const speed = PLAYER_SPEED
+    const speed = 20 // Adjust speed as needed
     player1.moveWithDirection(movement, speed)
 }
 
@@ -70,6 +70,10 @@ function handleAction() {
     if (keyHandler.getAction()) {
         player1.axe.startAttack()
     }
+}
+
+function handleZoom() {
+    keyHandler.setZoom(keyHandler.getZoom())
 }
 
 function keyPressed() {

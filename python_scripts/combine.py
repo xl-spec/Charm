@@ -23,6 +23,7 @@ if __name__ == "__main__":
         "/Users/jack/Desktop/Projects/Charm2D/sprites/weapon.js",
         "/Users/jack/Desktop/Projects/Charm2D/world/level.js",
         "/Users/jack/Desktop/Projects/Charm2D/world/layer.js",
+        "/Users/jack/Desktop/Projects/Charm2D/user_interface/ui.js",
         "/Users/jack/Desktop/Projects/Charm2D/sketch.js",
     ]
     output_filename = "python_scripts/combined_output.txt"  # Replace with your desired output file name

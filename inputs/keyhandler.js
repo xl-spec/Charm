@@ -22,6 +22,21 @@ class KeyHandler {
         }
     }
 
+    getZoom() {
+        let zoomDelta = 0
+        if (this.keys['e'] || this.keys['+']) {
+            zoomDelta += ZOOM_STEP
+        }
+        if (this.keys['q'] || this.keys['_']) {
+            zoomDelta -= ZOOM_STEP
+        }
+        return zoomDelta
+    }
+
+    setZoom(zoomDelta) {
+        ZOOMIES += zoomDelta
+    }
+
     getAction() {
         return this.keys[' '] || false // space bar triggers action
     }
