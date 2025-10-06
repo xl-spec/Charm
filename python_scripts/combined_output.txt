@@ -1,0 +1,641 @@
+File name: keyhandler.js 
+class KeyHandler {
+    constructor() {
+        this.keys = {}
+    }
+
+    handleKeyPressed(k) {
+        this.keys[k] = true
+    }
+
+    handleKeyReleased(k) {
+        this.keys[k] = false
+    }
+
+    getMovement() {
+        return {
+            north: this.keys['w'] || this.keys['W'],
+            south: this.keys['s'] || this.keys['S'],
+            east: this.keys['d'] || this.keys['D'],
+            west: this.keys['a'] || this.keys['A'],
+            up: false,
+            down: false,
+        }
+    }
+
+    getAction() {
+        return this.keys[' '] || false // space bar triggers action
+    }
+}
+ 
+
+File name: mousehandler.js 
+class MouseHandler {
+    constructor() {
+        this.dragStart = null
+        this.offset = createVector(0, 0)
+    }
+
+    mousePressed() {
+        this.dragStart = createVector(mouseX, mouseY)
+    }
+
+    mouseDragged() {
+        if (this.dragStart) {
+            let current = createVector(mouseX, mouseY)
+            let delta = Vector.sub(current, this.dragStart)
+            this.offset.add(delta)
+            this.dragStart = current
+        }
+    }
+
+    mouseReleased() {
+        this.dragStart = null
+    }
+
+    mouseWheel(event) {}
+
+    applyTranslation() {
+        // Apply panning offset
+        translate(this.offset.x, this.offset.y)
+    }
+}
+ 
+
+File name: settings.js 
+var PLAYER_START_X = 100
+var PLAYER_START_Y = 100
+var PLAYER_START_SIZE = 64
+var PLAYER_START_COLOR = [0, 0, 255]
+
+var LEVEL_WIDTH = 1280
+var LEVEL_HEIGHT = 800
+
+let level // Level object
+let guiCanvas // 2D overlay graphics
+let mouseHandler // Handles panning/dragging
+let keyHandler // Handles keyboard input
+let entities = [] // Array of other sprites/entities
+let player1 // The controllable player
+ 
+
+File name: artifact.js 
+class Artifact extends MyObject {
+    constructor(x, y, size, color, name) {
+        super(x, y, size, color, name)
+        this.is_alive = false
+    }
+}
+
+class Lamp extends Artifact {
+    constructor(x, y, size, color, name) {
+        super(x, y, size, color, name)
+        this.size = 16
+        this.lit = true
+    }
+
+    draw() {
+        push()
+        translate(this.x, this.y)
+        fill(20, 100, 255)
+        noStroke()
+        // Lamp pole
+        rect(-this.size / 4, -this.size * 4, this.size / 2, this.size * 8)
+        pop()
+
+        push()
+        // Lamp light
+        translate(this.x, this.y - this.size * 4)
+        noStroke()
+        fill(255, 255, 50)
+        ellipse(0, 0, this.size)
+        pop()
+    }
+}
+
+class Snowmound extends Artifact {
+    constructor(x, y, size, color, name) {
+        super(x, y, size, color, name)
+        this.size = 48
+        this.name = 'Snowmound'
+    }
+
+    draw() {
+        push()
+        translate(this.x, this.y)
+        fill(255)
+        noStroke()
+        ellipse(0, 0, this.size, this.size / 2)
+        pop()
+    }
+}
+ 
+
+File name: creature.js 
+class Creature extends MyObject {
+    constructor(x, y, size, color, name) {
+        super(x, y, size, color, name)
+    }
+
+    move(dx, dy) {
+        this.x += dx
+        this.y += dy
+    }
+}
+
+class Tree extends Creature {
+    constructor(x, y, size, color, name) {
+        super(x, y, size, color, name)
+        this.size = 32
+        this.name = 'Dead Tree'
+    }
+
+    draw() {
+        if (this.is_alive) {
+            push()
+            translate(this.x, this.y)
+            // Trunk
+            fill(139, 69, 19)
+            rect(-this.size / 8, -this.size, this.size / 4, this.size)
+            // Leaves
+            fill(34, 139, 34)
+            ellipse(0, -this.size, this.size, this.size)
+            pop()
+        }
+    }
+}
+
+class Snowman extends Creature {
+    constructor(x, y, size, color, name) {
+        super(x, y, size, color, name)
+        this.size = 32
+        this.name = 'Snowman'
+        this.snowball = new Snowball('snowball', this)
+    }
+
+    update(player) {
+        // Fire a snowball at the player if not already active
+        if (!this.snowball.active) {
+            this.shootAtPlayer(player)
+        }
+        this.snowball.update()
+    }
+
+    shootAtPlayer(player) {
+        this.snowball.startAttack(createVector(player.x, player.y))
+    }
+
+    draw() {
+        if (this.is_alive) {
+            push()
+            translate(this.x, this.y)
+            fill(255)
+            // Draw three stacked circles (from top to bottom)
+            ellipse(0, -this.size, this.size * 0.5)
+            ellipse(0, 0, this.size * 0.8)
+            ellipse(0, this.size, this.size)
+            pop()
+            this.snowball.draw()
+        }
+    }
+}
+ 
+
+File name: hitbox.js 
+class Hitbox {
+    constructor(x, y, size) {
+        this.x = x
+        this.y = y
+        this.size = size
+    }
+
+    update(x, y, size) {
+        this.x = x
+        this.y = y
+        this.size = size
+    }
+
+    draw() {
+        push()
+        noFill()
+        stroke(255, 0, 0)
+        ellipse(this.x, this.y, this.size)
+        pop()
+    }
+}
+ 
+
+File name: myobject.js 
+class MyObject {
+    constructor(x, y, size, color, name) {
+        this.x = x
+        this.y = y
+        this.size = size
+        this.color = color || [100, 200, 255, 150]
+        this.name = name || 'myObject'
+        this.is_alive = true
+        this.hitbox = new Hitbox(this.x, this.y, this.size)
+    }
+
+    draw() {
+        // Update and draw hitbox for debugging
+        this.hitbox.update(this.x, this.y, this.size)
+        this.hitbox.draw()
+    }
+}
+ 
+
+File name: player.js 
+class Player extends Creature {
+    constructor(x, y, size, color, name) {
+        super(x, y, size, color, name)
+        this.name = 'Character'
+        this.axe = new Axe('Wood Axe', this)
+        this.centered_xyz = [0, 0, 0]
+        this.pivot_xyz = [0, 0, 0]
+    }
+
+    getcentered_xyz() {
+        this.centered_xyz = [this.x + this.size / 2, this.y + this.size / 2, 0]
+        return this.centered_xyz
+    }
+
+    moveWithDirection(direction, speed) {
+        let dx = 0,
+            dy = 0
+        if (direction.west) {
+            dx -= 1
+            this.pivot_xyz[0] -= 1
+        }
+        if (direction.east) {
+            dx += 1
+            this.pivot_xyz[0] += 1
+        }
+        if (direction.north) {
+            dy -= 1
+            this.pivot_xyz[1] -= 1
+        }
+        if (direction.south) {
+            dy += 1
+            this.pivot_xyz[1] += 1
+        }
+        const isDiagonal = dx !== 0 && dy !== 0
+        const moveSpeed = isDiagonal ? speed / 1.414 : speed
+        this.move(dx * moveSpeed, dy * moveSpeed)
+    }
+
+    draw() {
+        super.draw()
+        push()
+        translate(this.x, this.y)
+        fill(this.color)
+        stroke(255)
+        ellipse(0, 0, this.size, this.size)
+        pop()
+        this.axe.draw()
+    }
+}
+ 
+
+File name: weapon.js 
+class Weapons {
+    constructor(name, holder) {
+        this.name = name
+        this.holder = holder
+        this.hitbox = new Hitbox(this.holder.x, this.holder.y, this.holder.size)
+    }
+}
+
+class Axe extends Weapons {
+    constructor(name, holder) {
+        super(name, holder)
+        this.isAttacking = false
+        this.angle = -0.2
+        this.swingSpeed = 0.1
+        this.maxAngle = PI / 2
+        this.idleAngle = -0.2
+    }
+
+    startAttack() {
+        this.isAttacking = true
+    }
+
+    endAttack() {
+        this.isAttacking = false
+        this.angle = this.idleAngle
+    }
+
+    update() {
+        if (!this.isAttacking) return
+        this.angle += this.swingSpeed
+        if (this.angle > this.maxAngle) {
+            this.endAttack()
+        }
+    }
+
+    draw() {
+        push()
+        // Draw the axe relative to the holder
+        translate(this.holder.x, this.holder.y)
+        rotate(this.angle)
+        fill(150)
+        noStroke()
+        // A simple rectangle represents the axe blade
+        rect(0, -5, 40, 10)
+        pop()
+    }
+}
+
+class Snowball extends Weapons {
+    constructor(name, holder) {
+        super(name, holder)
+        this.isAttacking = false
+        this.position = createVector(holder.x, holder.y)
+        this.velocity = createVector(0, 0)
+        // Gravity pulls down (in 2D, positive y is down)
+        this.acceleration = createVector(0, 0.02)
+        this.active = false
+    }
+
+    startAttack(target) {
+        if (!this.active) {
+            this.isAttacking = true
+            this.active = true
+            let dx = target.x - this.position.x
+            let dy = target.y - this.position.y
+            let distance = sqrt(dx * dx + dy * dy)
+            let horizontalSpeed = 5
+            let t = distance / horizontalSpeed
+            if (t <= 0) {
+                this.active = false
+                return
+            }
+            let vx = dx / t
+            let vy = dy / t - 0.5 * this.acceleration.y * t
+            this.velocity.set(vx, vy)
+        }
+    }
+
+    update() {
+        if (!this.active) return
+        this.velocity.add(this.acceleration)
+        this.position.add(this.velocity)
+        // If out of canvas bounds, reset
+        if (this.position.y > height || this.position.y < 0) {
+            this.isAttacking = false
+            this.position.set(this.holder.x, this.holder.y)
+            this.active = false
+        }
+    }
+
+    draw() {
+        if (!this.active) return
+        push()
+        translate(this.position.x, this.position.y)
+        fill(255)
+        noStroke()
+        ellipse(0, 0, 8)
+        pop()
+    }
+}
+ 
+
+File name: level.js 
+class Level {
+    constructor(w = LEVEL_WIDTH, h = LEVEL_HEIGHT) {
+        this.size = { w, h }
+        this.layers = []
+        this.previousPivot = null // Track the player's previous position
+    }
+
+    generate_layers() {
+        const spacing = 15 // Distance between rectangles on all sides
+        let decrement = 1 // need to linearly scale this with width and height (do later)
+        for (let i = 0; i < 20; i++) {
+            let x = i * spacing
+            let y = i * spacing
+            let width = this.size.w - 2 * x + decrement
+            let height = this.size.h - 2 * y + decrement
+
+            let layer = new Layer(
+                width,
+                height,
+                x - decrement / 2,
+                y - decrement / 2
+            )
+            layer.layerN = i + 1
+            layer.color = [10 + i * 15, 200 - i * 20, 255, 150]
+            this.layers.push(layer)
+            decrement *= 1.3
+        }
+        console.log('layer 0 w: ' + this.layers[0].size.w)
+        console.log('layer 1 w: ' + this.layers[1].size.w)
+        console.log('layer 2 w: ' + this.layers[2].size.w)
+
+        console.log('layer 0 h: ' + this.layers[0].size.h)
+        console.log('layer 1 h: ' + this.layers[1].size.h)
+        console.log('layer 2 h: ' + this.layers[2].size.h)
+        // console.log(layer.size.h)
+    }
+
+    adjust_layer(playerObj) {
+        if (!this.previousPivot) {
+            this.previousPivot = [...playerObj.pivot_xyz]
+            return
+        }
+
+        const dx = playerObj.pivot_xyz[0] - this.previousPivot[0]
+        const dy = playerObj.pivot_xyz[1] - this.previousPivot[1]
+
+        if (dx !== 0 || dy !== 0) {
+            this.layers.forEach((layer, i) => {
+                const factor = (i + 1) / this.layers.length // Scale factor based on layer number
+                layer.position.x += dx * factor * 10 // Adjust x position by delta
+                layer.position.y += dy * factor * 10 // Adjust y position by delta
+            })
+
+            this.previousPivot = [...playerObj.pivot_xyz]
+        }
+    }
+
+    draw() {
+        for (let layer of this.layers) {
+            push()
+            // translate(0, 0)
+            noFill()
+            stroke(
+                layer.color[0],
+                layer.color[1],
+                layer.color[2],
+                layer.color[3]
+            )
+            rect(layer.position.x, layer.position.y, layer.size.w, layer.size.h)
+            pop()
+        }
+    }
+}
+ 
+
+File name: layer.js 
+class Layer {
+    constructor(w = LEVEL_WIDTH, h = LEVEL_HEIGHT, x = 0, y = 0) {
+        this.layerN = 0; // Default layer number
+        this.size = { w, h }; // Width and height of the layer
+        this.position = { x, y }; // Position of the layer
+        this.color = [10, 200, 255, 150]; // Default color
+    }
+
+    // draw() {   
+    //     push()
+    //     translate(width / 2 - this.size.w / 2, height / 2 - this.size.h / 2)
+    //     fill(this.color);
+    //     stroke(255)
+    //     rect(0, 0, this.size.w, this.size.h)
+    //     pop()
+    // }
+}
+ 
+
+File name: ui.js 
+class UI {
+    constructor(w = LEVEL_WIDTH, h = LEVEL_HEIGHT, x = 0, y = 0) {
+        this.size = { w, h }
+        this.position = { x, y }
+        this.color = [10, 200, 255, 150]
+        this.thickness = 30
+    }
+
+    draw() {
+        // noStroke()
+
+        beginShape()
+
+        vertex(this.position.x, this.position.y)
+        vertex(this.position.x + this.size.w, this.position.y)
+        vertex(this.position.x + this.size.w, this.position.y + this.size.h)
+        vertex(this.position.x, this.position.y + this.size.h)
+
+        beginContour()
+        // fill(...this.color)
+        vertex(
+            this.position.x + this.thickness,
+            this.position.y + this.thickness
+        )
+        vertex(
+            this.position.x + this.size.w - this.thickness,
+            this.position.y + this.thickness
+        )
+        vertex(
+            this.position.x + this.size.w - this.thickness,
+            this.position.y + this.size.h - this.thickness
+        )
+        vertex(
+            this.position.x + this.thickness,
+            this.position.y + this.size.h - this.thickness
+        )
+
+        endContour()
+
+        endShape(CLOSE)
+    }
+}
+ 
+
+File name: sketch.js 
+// new Q5('global')
+function setup() {
+    // createCanvas(windowWidth, windowHeight)
+    createCanvas(LEVEL_WIDTH, LEVEL_HEIGHT)
+
+    mouseHandler = new MouseHandler()
+    keyHandler = new KeyHandler()
+    // collider = new Collider(); // if you have collision handling implemented
+
+    level = new Level(LEVEL_WIDTH, LEVEL_HEIGHT)
+    ui = new UI(LEVEL_WIDTH, LEVEL_HEIGHT)
+    level.generate_layers()
+    player1 = new Player(
+        PLAYER_START_X,
+        PLAYER_START_Y,
+        PLAYER_START_SIZE,
+        PLAYER_START_COLOR,
+        'Player'
+    )
+    player1.x = width / 2
+    player1.y = height / 2
+
+    // Create some sample entities
+    // for (let i = 0; i < 5; i++) {
+    //   entities.push(new Lamp(random(0, LEVEL_WIDTH), random(0, LEVEL_HEIGHT), 16, [255, 255, 0], "Lamp"));
+    // }
+    // for (let i = 0; i < 10; i++) {
+    //   entities.push(new Tree(random(0, LEVEL_WIDTH), random(0, LEVEL_HEIGHT), 32, [0, 255, 0], "Tree"));
+    //   entities.push(new Snowman(random(0, LEVEL_WIDTH), random(0, LEVEL_HEIGHT), 32, [255, 255, 255], "Snowman"));
+    //   entities.push(new Snowmound(random(0, LEVEL_WIDTH), random(0, LEVEL_HEIGHT), 48, [200, 200, 200], "Snowmound"));
+    // }
+}
+
+function draw() {
+    clear()
+    background(50)
+
+    push()
+
+    ui.draw()
+    mouseHandler.applyTranslation()
+    translate(width / 2 - player1.x, height / 2 - player1.y)
+    level.adjust_layer(player1)
+    level.draw()
+    player1.draw()
+    player1.axe.update()
+
+    // Draw all other entities
+    // for (let entity of entities) {
+    //     entity.draw()
+    //     if (entity.update) {
+    //         entity.update(player1)
+    //     }
+    // }
+    pop()
+
+    handleMovement()
+    handleAction()
+}
+
+function handleMovement() {
+    const movement = keyHandler.getMovement()
+    const speed = 20 // Adjust speed as needed
+    player1.moveWithDirection(movement, speed)
+}
+
+function handleAction() {
+    if (keyHandler.getAction()) {
+        player1.axe.startAttack()
+    }
+}
+
+function keyPressed() {
+    keyHandler.handleKeyPressed(key)
+}
+
+function keyReleased() {
+    keyHandler.handleKeyReleased(key)
+}
+
+function mousePressed() {
+    mouseHandler.mousePressed()
+}
+
+function mouseDragged() {
+    mouseHandler.mouseDragged()
+}
+
+function mouseReleased() {
+    mouseHandler.mouseReleased()
+}
+
+function mouseWheel(event) {
+    mouseHandler.mouseWheel(event)
+}
+ 
+
